@@ -66,22 +66,26 @@ echo "✓ Plugin count: $PLUGIN_COUNT"
 echo ""
 echo "Validating plugin entries..."
 
-for i in $(seq 0 $((PLUGIN_COUNT - 1))); do
-    PLUGIN_NAME=$(jq -r ".plugins[$i].name // empty" "$MARKETPLACE_FILE")
-    PLUGIN_SOURCE=$(jq -r ".plugins[$i].source // empty" "$MARKETPLACE_FILE")
+if [ "$PLUGIN_COUNT" -gt 0 ]; then
+    for i in $(seq 0 $((PLUGIN_COUNT - 1))); do
+        PLUGIN_NAME=$(jq -r ".plugins[$i].name // empty" "$MARKETPLACE_FILE")
+        PLUGIN_SOURCE=$(jq -r ".plugins[$i].source // empty" "$MARKETPLACE_FILE")
 
-    if [ -z "$PLUGIN_NAME" ]; then
-        echo "✗ Plugin $i: Missing name"
-        exit 1
-    fi
+        if [ -z "$PLUGIN_NAME" ]; then
+            echo "✗ Plugin $i: Missing name"
+            exit 1
+        fi
 
-    if [ -z "$PLUGIN_SOURCE" ]; then
-        echo "✗ Plugin $i ($PLUGIN_NAME): Missing source"
-        exit 1
-    fi
+        if [ -z "$PLUGIN_SOURCE" ]; then
+            echo "✗ Plugin $i ($PLUGIN_NAME): Missing source"
+            exit 1
+        fi
 
-    echo "✓ Plugin $i: $PLUGIN_NAME"
-done
+        echo "✓ Plugin $i: $PLUGIN_NAME"
+    done
+else
+    echo "(No plugins to validate)"
+fi
 
 echo ""
 echo "✓ Marketplace validation passed!"
