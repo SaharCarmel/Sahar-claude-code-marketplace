@@ -1,0 +1,13 @@
+{
+  "name": "sahar-claude-code-marketplace",
+  "owner": {
+    "name": "Sahar Carmel",
+    "email": "sahar@example.com"
+  },
+  "metadata": {
+    "description": "A curated collection of Claude Code plugins for personal use and sharing",
+    "version": "1.0.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": []
+}
