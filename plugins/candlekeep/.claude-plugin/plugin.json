@@ -7,7 +7,6 @@
     "email": "sahar@example.com"
   },
   "license": "MIT",
-  "category": "productivity",
   "keywords": [
     "knowledge-base",
     "books",
@@ -18,14 +17,5 @@
     "markdown"
   ],
   "homepage": "https://github.com/saharcarmel/candlekeep",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/saharcarmel/candlekeep"
-  },
-  "engines": {
-    "python": ">=3.10"
-  },
-  "dependencies": {
-    "uv": ">=0.1.0"
-  }
+  "repository": "https://github.com/saharcarmel/candlekeep"
 }

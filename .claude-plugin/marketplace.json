@@ -1,28 +1,34 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "sahar-claude-code-marketplace",
+  "version": "1.0.0",
+  "description": "Personal Claude Code plugin marketplace featuring productivity and entertainment plugins",
   "owner": {
     "name": "Sahar Carmel",
     "email": "sahar@example.com"
   },
-  "metadata": {
-    "description": "A curated collection of Claude Code plugins for personal use and sharing",
-    "version": "1.0.0",
-    "pluginRoot": "./plugins"
-  },
   "plugins": [
     {
       "name": "candlekeep",
-      "source": "./plugins/candlekeep",
-      "description": "Personal knowledge base system that gives AI agents direct access to your books. Query PDFs and Markdown with table of contents navigation, precise page extraction, and citation support.",
+      "description": "Personal knowledge base system that gives AI agents direct access to your books",
       "version": "0.1.0",
       "author": {
         "name": "Sahar Carmel",
         "email": "sahar@example.com"
       },
-      "category": "productivity",
-      "keywords": ["knowledge-base", "books", "library", "documentation", "pdf", "markdown", "research", "citations"],
-      "homepage": "https://github.com/saharcarmel/candlekeep",
-      "license": "MIT"
+      "source": "./plugins/candlekeep",
+      "category": "productivity"
+    },
+    {
+      "name": "dnd-dm",
+      "description": "Complete D&D Dungeon Master assistant with campaign management, dice rolling, and AI-powered NPC voices using ElevenLabs",
+      "version": "0.1.0",
+      "author": {
+        "name": "Sahar Carmel",
+        "email": "sahar@example.com"
+      },
+      "source": "./plugins/dnd-dm",
+      "category": "entertainment"
     }
   ]
 }
