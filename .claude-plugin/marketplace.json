@@ -29,6 +29,17 @@
       },
       "source": "./plugins/dnd-dm",
       "category": "entertainment"
+    },
+    {
+      "name": "linear-extended",
+      "description": "Extended Linear operations including project milestones management - list, create, update, delete milestones",
+      "version": "1.0.0",
+      "author": {
+        "name": "Sahar Carmel",
+        "email": "sahar@example.com"
+      },
+      "source": "./plugins/linear-extended",
+      "category": "productivity"
     }
   ]
 }
