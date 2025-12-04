@@ -1,0 +1,15 @@
+{
+  "name": "linear-extended",
+  "version": "1.0.0",
+  "description": "Extended Linear operations including project milestones management",
+  "author": {
+    "name": "Sahar Carmel"
+  },
+  "license": "MIT",
+  "keywords": [
+    "linear",
+    "milestones",
+    "projects",
+    "project-management"
+  ]
+}

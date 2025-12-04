@@ -1,0 +1,8 @@
+{
+  "name": "linear-extended-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@linear/sdk": "^29.0.0"
+  }
+}
