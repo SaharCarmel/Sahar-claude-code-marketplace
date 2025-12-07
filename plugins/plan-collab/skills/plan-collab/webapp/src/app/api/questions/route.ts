@@ -6,6 +6,14 @@ import {
   answerQuestion
 } from '@/lib/db';
 
+// Helper to parse options JSON from database
+function parseQuestionOptions(question: Record<string, unknown>) {
+  return {
+    ...question,
+    options: question.options ? JSON.parse(question.options as string) : null
+  };
+}
+
 // GET /api/questions - Get questions for a plan
 export async function GET(request: NextRequest) {
   try {
@@ -22,12 +30,15 @@ export async function GET(request: NextRequest) {
 
     let questions;
     if (pendingOnly) {
-      questions = getPendingQuestions(planId);
+      questions = getPendingQuestions(planId) as Record<string, unknown>[];
     } else {
-      questions = getQuestionsByPlan(planId);
+      questions = getQuestionsByPlan(planId) as Record<string, unknown>[];
     }
 
-    return NextResponse.json({ questions });
+    // Parse options JSON for each question
+    const parsedQuestions = questions.map(parseQuestionOptions);
+
+    return NextResponse.json({ questions: parsedQuestions });
   } catch (error) {
     console.error('Error fetching questions:', error);
     return NextResponse.json(
@@ -41,7 +52,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { planId, questionText, context, lineNumber, sectionPath } = body;
+    const { planId, questionText, options, context, lineNumber, sectionPath } = body;
 
     if (!planId || !questionText) {
       return NextResponse.json(
@@ -53,12 +64,21 @@ export async function POST(request: NextRequest) {
     const question = createQuestion({
       planId,
       questionText,
+      options,
       context,
       lineNumber,
       sectionPath
     });
 
-    return NextResponse.json({ question });
+    // Parse options JSON if present
+    const parsedQuestion = {
+      ...question,
+      options: (question as { options?: string }).options
+        ? JSON.parse((question as { options: string }).options)
+        : null
+    };
+
+    return NextResponse.json({ question: parsedQuestion });
   } catch (error) {
     console.error('Error creating question:', error);
     return NextResponse.json(

@@ -6,6 +6,15 @@ import {
   updateCommentStatus
 } from '@/lib/db';
 
+// Normalize anchor text for reliable matching
+// - Collapse multiple whitespace/newlines to single space
+// - Trim leading/trailing whitespace
+function normalizeAnchorText(text: string): string {
+  return text
+    .replace(/\s+/g, ' ')  // Collapse all whitespace (including \n) to single space
+    .trim();
+}
+
 // GET /api/comments - Get comments for a plan/version
 export async function GET(request: NextRequest) {
   try {
@@ -60,12 +69,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Normalize anchor text for reliable matching
+    const normalizedAnchorText = normalizeAnchorText(anchorText);
+    const normalizedPrefix = anchorPrefix ? normalizeAnchorText(anchorPrefix) : undefined;
+    const normalizedSuffix = anchorSuffix ? normalizeAnchorText(anchorSuffix) : undefined;
+
     const comment = createComment({
       planId,
       versionId,
-      anchorText,
-      anchorPrefix,
-      anchorSuffix,
+      anchorText: normalizedAnchorText,
+      anchorPrefix: normalizedPrefix,
+      anchorSuffix: normalizedSuffix,
       anchorPath,
       startOffset,
       endOffset,

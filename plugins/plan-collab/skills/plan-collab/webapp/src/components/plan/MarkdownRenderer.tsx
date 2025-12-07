@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useMemo, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -21,17 +22,85 @@ function slugify(text: React.ReactNode): string {
     .replace(/(^-|-$)/g, '');
 }
 
+// Escape regex special characters
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export function MarkdownRenderer({
   content,
   comments = [],
   onCommentClick
 }: MarkdownRendererProps) {
   // Create a map of text to comments for highlighting
-  const commentMap = new Map<string, Comment[]>();
-  comments.forEach((comment) => {
-    const existing = commentMap.get(comment.anchor_text) || [];
-    commentMap.set(comment.anchor_text, [...existing, comment]);
-  });
+  const commentMap = useMemo(() => {
+    const map = new Map<string, Comment[]>();
+    comments.filter(c => c.status === 'OPEN').forEach((comment) => {
+      const existing = map.get(comment.anchor_text) || [];
+      map.set(comment.anchor_text, [...existing, comment]);
+    });
+    return map;
+  }, [comments]);
+
+  // Get sorted anchor texts (longer first to avoid partial matches)
+  const sortedAnchors = useMemo(() => {
+    return Array.from(commentMap.keys()).sort((a, b) => b.length - a.length);
+  }, [commentMap]);
+
+  // Function to highlight text with comments
+  const highlightText = useCallback((text: string): React.ReactNode => {
+    if (sortedAnchors.length === 0 || !text) {
+      return text;
+    }
+
+    // Build regex pattern from all anchors
+    const pattern = sortedAnchors.map(escapeRegex).join('|');
+    const regex = new RegExp(`(${pattern})`, 'g');
+
+    const parts = text.split(regex);
+
+    if (parts.length === 1) {
+      return text;
+    }
+
+    return parts.map((part, index) => {
+      const matchedComments = commentMap.get(part);
+      if (matchedComments && matchedComments.length > 0) {
+        return (
+          <mark
+            key={index}
+            className="bg-yellow-200 dark:bg-yellow-700/50 px-0.5 rounded cursor-pointer hover:bg-yellow-300 dark:hover:bg-yellow-600/50 transition-colors"
+            title={`${matchedComments.length} comment${matchedComments.length > 1 ? 's' : ''}: ${matchedComments[0].content.substring(0, 50)}${matchedComments[0].content.length > 50 ? '...' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onCommentClick) {
+                onCommentClick(matchedComments[0]);
+              }
+            }}
+          >
+            {part}
+          </mark>
+        );
+      }
+      return part;
+    });
+  }, [sortedAnchors, commentMap, onCommentClick]);
+
+  // Wrapper to apply highlighting to text children
+  const wrapWithHighlights = useCallback((children: React.ReactNode): React.ReactNode => {
+    return React.Children.map(children, (child) => {
+      if (typeof child === 'string') {
+        return highlightText(child);
+      }
+      if (React.isValidElement(child) && child.props.children) {
+        return React.cloneElement(child, {
+          ...child.props,
+          children: wrapWithHighlights(child.props.children)
+        } as React.HTMLAttributes<HTMLElement>);
+      }
+      return child;
+    });
+  }, [highlightText]);
 
   // Custom components for markdown elements
   const components: Components = {
@@ -73,10 +142,10 @@ export function MarkdownRenderer({
       </h4>
     ),
 
-    // Paragraphs
+    // Paragraphs - apply highlighting
     p: ({ children, ...props }) => (
       <p className="mb-4 leading-7" {...props}>
-        {children}
+        {wrapWithHighlights(children)}
       </p>
     ),
 
@@ -120,7 +189,7 @@ export function MarkdownRenderer({
     ol: ({ children }) => (
       <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>
     ),
-    li: ({ children }) => <li className="leading-7">{children}</li>,
+    li: ({ children }) => <li className="leading-7">{wrapWithHighlights(children)}</li>,
 
     // Blockquotes - special handling for questions
     blockquote: ({ children }) => {
@@ -169,7 +238,7 @@ export function MarkdownRenderer({
       <th className="px-4 py-2 font-medium text-left">{children}</th>
     ),
     td: ({ children }) => (
-      <td className="px-4 py-2 border-t border-border">{children}</td>
+      <td className="px-4 py-2 border-t border-border">{wrapWithHighlights(children)}</td>
     ),
 
     // Links

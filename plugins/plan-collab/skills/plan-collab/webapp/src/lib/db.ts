@@ -61,6 +61,7 @@ db.exec(`
     id TEXT PRIMARY KEY,
     plan_id TEXT NOT NULL,
     question_text TEXT NOT NULL,
+    options TEXT,
     context TEXT,
     line_number INTEGER,
     section_path TEXT,
@@ -223,18 +224,21 @@ export function getPendingQuestions(planId: string) {
 export function createQuestion(data: {
   planId: string;
   questionText: string;
+  options?: Array<{ label: string; description?: string }>;
   context?: string;
   lineNumber?: number;
   sectionPath?: string;
 }) {
   const id = generateId();
+  const optionsJson = data.options ? JSON.stringify(data.options) : null;
   db.prepare(`
-    INSERT INTO questions (id, plan_id, question_text, context, line_number, section_path)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO questions (id, plan_id, question_text, options, context, line_number, section_path)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     data.planId,
     data.questionText,
+    optionsJson,
     data.context || null,
     data.lineNumber || null,
     data.sectionPath || null

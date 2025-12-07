@@ -44,8 +44,8 @@ export default async function startServer(args) {
   const noBrowser = args.includes('--no-browser');
 
   try {
-    // Start Next.js in production mode
-    const serverProcess = spawn('npm', ['run', 'start'], {
+    // Start Next.js in development mode (for hot reloading during development)
+    const serverProcess = spawn('npm', ['run', 'dev'], {
       cwd: WEBAPP_DIR,
       detached: true,
       stdio: ['ignore', 'pipe', 'pipe'],

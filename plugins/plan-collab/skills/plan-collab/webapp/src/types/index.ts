@@ -34,10 +34,16 @@ export interface Comment {
   updated_at: string;
 }
 
+export interface QuestionOption {
+  label: string;
+  description?: string;
+}
+
 export interface Question {
   id: string;
   plan_id: string;
   question_text: string;
+  options: QuestionOption[] | null;  // Multiple choice options
   context: string | null;
   line_number: number | null;
   section_path: string | null;
