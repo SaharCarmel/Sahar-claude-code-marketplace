@@ -1,0 +1,20 @@
+{
+  "name": "plan-collab",
+  "version": "1.0.0",
+  "description": "Collaborative plan review system with web interface for commenting on Claude's implementation plans",
+  "author": {
+    "name": "Sahar Carmel",
+    "email": "sahar@example.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "planning",
+    "collaboration",
+    "review",
+    "feedback",
+    "comments",
+    "markdown"
+  ],
+  "homepage": "https://github.com/saharcarmel/plan-collab",
+  "repository": "https://github.com/saharcarmel/plan-collab"
+}

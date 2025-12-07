@@ -40,6 +40,17 @@
       },
       "source": "./plugins/linear-extended",
       "category": "productivity"
+    },
+    {
+      "name": "plan-collab",
+      "description": "Collaborative plan review system with web interface for commenting on Claude's implementation plans",
+      "version": "1.0.0",
+      "author": {
+        "name": "Sahar Carmel",
+        "email": "sahar@example.com"
+      },
+      "source": "./plugins/plan-collab",
+      "category": "productivity"
     }
   ]
 }

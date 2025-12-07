@@ -1,0 +1,17 @@
+{
+  "$schema": "https://code.claude.com/settings.schema.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/skills/plan-collab/scripts/on-plan-write.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
