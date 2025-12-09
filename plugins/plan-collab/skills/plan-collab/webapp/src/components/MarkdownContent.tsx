@@ -4,6 +4,15 @@ import { cn } from "@/lib/utils";
 import { MermaidDiagram } from "./MermaidDiagram";
 import { LinkedIssuesPanel } from "./LinkedIssuesPanel";
 import { TextSelectionPopup } from "./TextSelectionPopup";
+import { CodeBlock } from "./CodeBlock";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface MarkdownContentProps {
   document: Document;
@@ -22,9 +31,10 @@ interface TextSelection {
 export function MarkdownContent({ document: doc, activeHighlight, onHighlightClick, onAddComment }: MarkdownContentProps) {
   const [textSelection, setTextSelection] = useState<TextSelection | null>(null);
 
-  // Extract code blocks (including mermaid) before processing
-  const { processedContent, codeBlocks } = useMemo(() => {
+  // Extract code blocks (including mermaid) and tables before processing
+  const { processedContent, codeBlocks, tables } = useMemo(() => {
     const blocks: { type: string; content: string; placeholder: string }[] = [];
+    const tableBlocks: { content: string; placeholder: string }[] = [];
     let content = doc.content;
 
     // Match code blocks with language specifier
@@ -42,7 +52,19 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
       index++;
     }
 
-    return { processedContent: content, codeBlocks: blocks };
+    // Match markdown tables: | header | header |\n|---|---|\n| cell | cell |
+    const tableRegex = /^\|(.+)\|\n\|([-:\s|]+)\|\n((?:\|.+\|\n?)+)/gm;
+    let tableIndex = 0;
+    let tableMatch;
+
+    while ((tableMatch = tableRegex.exec(content)) !== null) {
+      const placeholder = `__TABLE_${tableIndex}__`;
+      tableBlocks.push({ content: tableMatch[0], placeholder });
+      content = content.replace(tableMatch[0], placeholder + "\n");
+      tableIndex++;
+    }
+
+    return { processedContent: content, codeBlocks: blocks, tables: tableBlocks };
   }, [doc.content]);
 
   // Handle text selection for comments
@@ -106,13 +128,51 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
             <MermaidDiagram key={`mermaid-${lineIndex}`} chart={block.content} />
           );
         } else {
-          // Regular code block
+          // Syntax-highlighted code block
           elements.push(
-            <pre key={`code-${lineIndex}`} className="my-6 p-4 rounded-xl bg-card border border-border overflow-x-auto">
-              <code className="text-sm font-mono text-foreground/90 whitespace-pre">
-                {block.content}
-              </code>
-            </pre>
+            <CodeBlock
+              key={`code-${lineIndex}`}
+              code={block.content}
+              language={block.type}
+            />
+          );
+        }
+        return;
+      }
+
+      // Check if this line is a table placeholder
+      const tableMatch = line.match(/__TABLE_(\d+)__/);
+      if (tableMatch) {
+        const tableIndex = parseInt(tableMatch[1]);
+        const tableBlock = tables[tableIndex];
+        if (tableBlock) {
+          const tableLines = tableBlock.content.trim().split("\n");
+          const headers = tableLines[0].split("|").filter(Boolean).map(h => h.trim());
+          const rows = tableLines.slice(2).map(row =>
+            row.split("|").filter(Boolean).map(cell => cell.trim())
+          );
+
+          elements.push(
+            <div key={`table-${lineIndex}`} className="my-6 overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {headers.map((h, i) => (
+                      <TableHead key={i} className="font-semibold">{h}</TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((row, i) => (
+                    <TableRow key={i}>
+                      {row.map((cell, j) => (
+                        <TableCell key={j}>{cell}</TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           );
         }
         return;
@@ -269,7 +329,7 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
     });
 
     return elements;
-  }, [processedContent, codeBlocks, doc.highlights, activeHighlight, onHighlightClick]);
+  }, [processedContent, codeBlocks, tables, doc.highlights, activeHighlight, onHighlightClick]);
 
   return (
     <article className="prose-reader max-w-none">
