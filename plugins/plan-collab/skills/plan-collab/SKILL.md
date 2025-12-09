@@ -66,6 +66,26 @@ Output:
 node cli.js status
 ```
 
+## Server Management
+
+### IMPORTANT: Always Check Status First
+
+Before starting the server, ALWAYS check if it's already running:
+
+```bash
+node cli.js status
+```
+
+**If server is running** (response shows `"running": true`):
+- DO NOT run `start-server` - use the existing instance
+- Note the URL from the response (e.g., `http://localhost:3847`)
+- Proceed directly to `open-plan`
+
+**If server is not running** (response shows `"running": false`):
+- Run `node cli.js start-server`
+
+> **Note:** The `start-server` command is idempotent - if the server is already running, it returns `{"status": "already_running", ...}` and exits safely. However, checking status first is more efficient and avoids unnecessary startup attempts.
+
 ## Commands Reference
 
 | Command | Description | Example |
@@ -107,9 +127,10 @@ Toggle dark/light mode with the button in the header.
 ### When Creating Plans
 
 1. Write plan to `~/.claude/plans/<plan-name>.md`
-2. Start server: `node cli.js start-server`
-3. Open plan: `node cli.js open-plan <path>`
-4. Inform user: "I've opened the plan in your browser. Please review and add any comments."
+2. Check server status: `node cli.js status`
+3. If server NOT running (`"running": false`): `node cli.js start-server`
+4. Open plan: `node cli.js open-plan <path>`
+5. Inform user: "I've opened the plan in your browser. Please review and add any comments."
 
 ### When Collecting Feedback
 
