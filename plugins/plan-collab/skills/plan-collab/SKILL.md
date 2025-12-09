@@ -218,6 +218,53 @@ Common errors:
 4. **Version tracking**: Each plan change creates a new version
 5. **Question format**: Use `> [!QUESTION]` blocks for structured questions
 
+## Mermaid Diagram Best Practices
+
+Include Mermaid diagrams in plans to visualize complex concepts. The plan-collab web UI renders them beautifully.
+
+### Recommended Diagram Types
+
+| Type | Use Case | Example |
+|------|----------|---------|
+| `flowchart` | System architecture, decision trees | Component relationships |
+| `sequenceDiagram` | API interactions, data flow | Request/response cycles |
+| `stateDiagram-v2` | State machines, workflows | Order status transitions |
+| `erDiagram` | Database schema | Data model visualization |
+
+### Example: System Architecture
+
+```mermaid
+flowchart TD
+    subgraph Frontend
+        A[React App] --> B[API Client]
+    end
+    subgraph Backend
+        C[Server] --> D[Database]
+    end
+    B --> C
+```
+
+### Example: API Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant A as API
+    participant D as Database
+    U->>A: POST /data
+    A->>D: INSERT
+    D-->>A: Success
+    A-->>U: 201 Created
+```
+
+### When to Include Diagrams
+
+- Multi-step processes or workflows
+- System architecture changes
+- API design or data flow
+- Database schema modifications
+- Component relationships
+
 ## Working Directory
 
 CLI commands should be run from:

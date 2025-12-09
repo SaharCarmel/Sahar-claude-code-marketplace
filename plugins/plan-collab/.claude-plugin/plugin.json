@@ -16,5 +16,6 @@
     "markdown"
   ],
   "homepage": "https://github.com/saharcarmel/plan-collab",
-  "repository": "https://github.com/saharcarmel/plan-collab"
+  "repository": "https://github.com/saharcarmel/plan-collab",
+  "hooks": "hooks/hooks.json"
 }

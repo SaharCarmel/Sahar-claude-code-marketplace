@@ -1,0 +1,27 @@
+{
+  "description": "Plan-collab hooks for collaborative plan review",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/on-plan-write.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/on-plan-review.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
