@@ -6,10 +6,12 @@
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
+import crypto from 'crypto';
 
 const CONFIG_DIR = path.join(os.homedir(), '.plan-collab');
 const CONFIG_PATH = path.join(CONFIG_DIR, 'config.json');
 const PID_PATH = path.join(CONFIG_DIR, 'server.pid');
+const SESSION_PATH = path.join(CONFIG_DIR, 'session.json');
 
 /**
  * Ensure config directory exists with secure permissions
@@ -123,4 +125,45 @@ export async function getServerInfo() {
   };
 }
 
-export { CONFIG_DIR, CONFIG_PATH, PID_PATH };
+/**
+ * Generate or retrieve stable session ID for the current terminal
+ * Session IDs are tied to the parent shell PID, so they persist
+ * across multiple Claude Code invocations in the same terminal
+ */
+export async function getSessionId() {
+  try {
+    const data = await fs.readFile(SESSION_PATH, 'utf-8');
+    const session = JSON.parse(data);
+    // Session IDs are valid if the shell PID matches (same terminal)
+    if (session.shellPid === process.ppid) {
+      return session.sessionId;
+    }
+  } catch {
+    // File doesn't exist or is invalid, create new session
+  }
+
+  // Generate new session ID
+  const sessionId = `session_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`;
+  await ensureConfigDir();
+  await fs.writeFile(SESSION_PATH, JSON.stringify({
+    sessionId,
+    shellPid: process.ppid,
+    createdAt: new Date().toISOString()
+  }, null, 2), { mode: 0o600 });
+
+  return sessionId;
+}
+
+/**
+ * Get session info for display
+ */
+export async function getSessionInfo() {
+  try {
+    const data = await fs.readFile(SESSION_PATH, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    return null;
+  }
+}
+
+export { CONFIG_DIR, CONFIG_PATH, PID_PATH, SESSION_PATH };

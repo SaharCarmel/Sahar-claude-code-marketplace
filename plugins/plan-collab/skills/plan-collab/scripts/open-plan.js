@@ -10,7 +10,8 @@ import {
   loadConfig,
   updateConfig,
   isServerRunning,
-  getServerInfo
+  getServerInfo,
+  getSessionId
 } from './lib/config-store.js';
 import { loadFeedback, saveFeedback, createEmptyFeedback } from './lib/feedback-store.js';
 import { openBrowser, isPortResponding } from './lib/server-manager.js';
@@ -81,14 +82,17 @@ export default async function openPlan(args) {
     await saveFeedback(absolutePath, createEmptyFeedback(absolutePath));
   }
 
+  // Get session ID for this terminal
+  const sessionId = await getSessionId();
+
   // Notify server of new plan via API
-  const planUrl = `${serverInfo.url}?plan=${encodeURIComponent(absolutePath)}`;
+  const planUrl = `${serverInfo.url}?plan=${encodeURIComponent(absolutePath)}&sessionId=${encodeURIComponent(sessionId)}`;
 
   try {
     const response = await fetch(`${serverInfo.url}/api/plans`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ planPath: absolutePath })
+      body: JSON.stringify({ planPath: absolutePath, sessionId })
     });
 
     if (!response.ok) {
@@ -119,7 +123,8 @@ export default async function openPlan(args) {
       status: 'opened',
       planPath: absolutePath,
       url: planUrl,
-      port: serverInfo.port
+      port: serverInfo.port,
+      sessionId
     })
   );
 }
