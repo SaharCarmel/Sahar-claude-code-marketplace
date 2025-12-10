@@ -88,6 +88,7 @@ export default async function openPlan(args) {
   // Notify server of new plan via API
   const planUrl = `${serverInfo.url}?plan=${encodeURIComponent(absolutePath)}&sessionId=${encodeURIComponent(sessionId)}`;
 
+  let planId;
   try {
     const response = await fetch(`${serverInfo.url}/api/plans`, {
       method: 'POST',
@@ -103,6 +104,18 @@ export default async function openPlan(args) {
         })
       );
       process.exit(1);
+    }
+
+    const result = await response.json();
+    planId = result.plan?.id;
+
+    // Set status to 'working' since we're actively working on this plan
+    if (planId) {
+      await fetch(`${serverInfo.url}/api/plans/${planId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'working' })
+      });
     }
   } catch (err) {
     console.error(

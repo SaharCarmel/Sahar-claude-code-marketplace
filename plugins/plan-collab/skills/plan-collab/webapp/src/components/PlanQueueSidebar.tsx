@@ -1,16 +1,42 @@
-import { FileText, Clock, MessageSquare, User, Trash2, RefreshCw } from "lucide-react";
+import { FileText, Clock, MessageSquare, User, Trash2, RefreshCw, CheckCircle, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { PlanSummary } from "@/api/planCollab";
+import type { PlanSummary, PlanStatus } from "@/api/planCollab";
 
 interface PlanQueueSidebarProps {
   plans: PlanSummary[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onRemove?: (id: string) => void;
+  onSetStatus?: (id: string, status: PlanStatus) => void;
   onRefresh?: () => void;
   sessionId?: string;
+}
+
+function getStatusBadge(status: PlanStatus) {
+  switch (status) {
+    case 'working':
+      return (
+        <Badge className="bg-blue-500/90 hover:bg-blue-500 text-white text-[10px] px-1.5 py-0 h-4 animate-pulse">
+          Working
+        </Badge>
+      );
+    case 'updated':
+      return (
+        <Badge className="bg-orange-500/90 hover:bg-orange-500 text-white text-[10px] px-1.5 py-0 h-4">
+          Updated
+        </Badge>
+      );
+    case 'done':
+      return (
+        <Badge className="bg-green-600/90 hover:bg-green-600 text-white text-[10px] px-1.5 py-0 h-4">
+          Done
+        </Badge>
+      );
+    default:
+      return null;
+  }
 }
 
 function formatTimeAgo(dateString: string): string {
@@ -32,6 +58,7 @@ export function PlanQueueSidebar({
   selectedId,
   onSelect,
   onRemove,
+  onSetStatus,
   onRefresh,
   sessionId,
 }: PlanQueueSidebarProps) {
@@ -75,7 +102,10 @@ export function PlanQueueSidebar({
                     "hover:bg-sidebar-accent group relative",
                     selectedId === plan.id
                       ? "bg-sidebar-accent shadow-sm ring-1 ring-accent"
-                      : "bg-transparent"
+                      : "bg-transparent",
+                    plan.status === 'done' && "opacity-60",
+                    plan.status === 'working' && "ring-1 ring-blue-500/30",
+                    plan.status === 'updated' && "ring-1 ring-orange-500/30"
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -91,13 +121,14 @@ export function PlanQueueSidebar({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3
                           className={cn(
                             "font-medium text-sm leading-tight truncate",
                             selectedId === plan.id
                               ? "text-sidebar-primary"
-                              : "text-sidebar-foreground"
+                              : "text-sidebar-foreground",
+                            plan.status === 'done' && "text-sidebar-foreground/50"
                           )}
                         >
                           {plan.title}
@@ -108,6 +139,7 @@ export function PlanQueueSidebar({
                             You
                           </Badge>
                         )}
+                        {getStatusBadge(plan.status)}
                       </div>
 
                       <p className="text-xs text-sidebar-foreground/60 mt-1 truncate">
@@ -129,20 +161,54 @@ export function PlanQueueSidebar({
                     </div>
                   </div>
 
-                  {/* Remove button for own plans */}
-                  {plan.isOwn && onRemove && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 h-6 w-6 text-muted-foreground hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRemove(plan.id);
-                      }}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  )}
+                  {/* Action buttons - shown at bottom right on hover */}
+                  <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-sidebar/90 backdrop-blur-sm rounded-md p-0.5">
+                    {/* Mark Done / Reactivate button */}
+                    {onSetStatus && (
+                      plan.status === 'done' ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSetStatus(plan.id, 'pending');
+                          }}
+                          title="Reactivate plan"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-green-500 hover:bg-green-500/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSetStatus(plan.id, 'done');
+                          }}
+                          title="Mark as done"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" />
+                        </Button>
+                      )
+                    )}
+                    {/* Remove button */}
+                    {onRemove && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemove(plan.id);
+                        }}
+                        title="Remove from queue"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
                 </button>
               </li>
             ))}

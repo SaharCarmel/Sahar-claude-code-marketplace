@@ -44,6 +44,9 @@ export interface PlanAnswer {
   acknowledged: boolean;
 }
 
+// Plan status type
+export type PlanStatus = 'pending' | 'working' | 'updated' | 'done';
+
 // New types for queue system
 export interface PlanSummary {
   id: string;
@@ -54,6 +57,7 @@ export interface PlanSummary {
   pushedAt: string;
   updatedAt: string;
   isOwn: boolean;
+  status: PlanStatus;
   stats: {
     openComments: number;
     pendingQuestions: number;
@@ -62,9 +66,11 @@ export interface PlanSummary {
 }
 
 export interface SSEEvent {
-  type: 'connected' | 'plan:added' | 'plan:updated' | 'plan:removed' | 'comment:added' | 'comment:updated' | 'question:answered';
+  type: 'connected' | 'plan:added' | 'plan:updated' | 'plan:removed' | 'plan:status-changed' | 'comment:added' | 'comment:updated' | 'question:answered';
   plan?: Partial<Plan> & { contentChanged?: boolean };
   planId?: string;
+  status?: PlanStatus;
+  previousStatus?: PlanStatus;
   comment?: PlanComment;
   answer?: PlanAnswer;
   question?: PlanQuestion;
@@ -101,6 +107,19 @@ export async function removePlan(id: string, sessionId?: string): Promise<void> 
     const data = await res.json();
     throw new Error(data.error || 'Failed to remove plan');
   }
+}
+
+export async function updatePlanStatus(id: string, status: PlanStatus): Promise<{ status: PlanStatus; previousStatus: PlanStatus }> {
+  const res = await fetch(`${API_BASE}/plans/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to update plan status');
+  }
+  return data;
 }
 
 export async function addCommentToPlan(planId: string, data: {

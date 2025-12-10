@@ -33,6 +33,7 @@ Commands:
   open-plan <path>          Register plan and open in browser
   get-feedback [--all]      Fetch pending feedback (or all feedback)
   sync-plan <path>          Sync plan content to server
+  set-status <id|path> <s>  Set plan status (pending|working|updated|done)
   status                    Check server and plan status
   help                      Show this help message
 
@@ -57,6 +58,7 @@ async function main() {
     'open-plan': './open-plan.js',
     'get-feedback': './get-feedback.js',
     'sync-plan': './sync-plan.js',
+    'set-status': './set-status.js',
     status: './status.js'
   };
 

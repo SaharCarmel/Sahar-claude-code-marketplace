@@ -12,6 +12,7 @@ import {
   resolveCommentForPlan,
   answerQuestionForPlan,
   type Plan,
+  type PlanStatus,
 } from "@/api/planCollab";
 import { Document, Comment, HighlightedSection, Question } from "@/data/documents";
 
@@ -68,6 +69,7 @@ const Index = () => {
     error,
     selectPlan,
     deletePlan,
+    setPlanStatus,
     refreshPlans,
   } = usePlanQueue(sessionId);
 
@@ -143,6 +145,17 @@ const Index = () => {
     [deletePlan]
   );
 
+  const handleSetPlanStatus = useCallback(
+    async (planId: string, status: PlanStatus) => {
+      try {
+        await setPlanStatus(planId, status);
+      } catch (err) {
+        console.error("Failed to set plan status:", err);
+      }
+    },
+    [setPlanStatus]
+  );
+
   // Loading state
   if (loading) {
     return (
@@ -165,6 +178,7 @@ const Index = () => {
         selectedId={selectedPlanId}
         onSelect={selectPlan}
         onRemove={handleRemovePlan}
+        onSetStatus={handleSetPlanStatus}
         onRefresh={refreshPlans}
         sessionId={sessionId}
       />

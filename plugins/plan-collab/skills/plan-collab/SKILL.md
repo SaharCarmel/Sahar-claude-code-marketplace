@@ -95,7 +95,38 @@ node cli.js status
 | `open-plan <path>` | Open plan in browser | `node cli.js open-plan ~/.claude/plans/feature.md` |
 | `get-feedback` | Get pending comments | `node cli.js get-feedback` |
 | `sync-plan [path]` | Sync plan content | `node cli.js sync-plan` |
+| `set-status <id\|path> <status>` | Set plan status | `node cli.js set-status ~/.claude/plans/feature.md done` |
 | `status` | Check server status | `node cli.js status` |
+
+## Plan Status Management
+
+Plans in the queue have a status that tracks their lifecycle:
+
+| Status | Meaning | Visual |
+|--------|---------|--------|
+| `pending` | Plan pushed, waiting for work | Normal appearance |
+| `working` | Agent actively working on plan | Blue badge, pulsing border |
+| `updated` | Plan content has been updated | Orange badge |
+| `done` | Work complete or user dismissed | Green badge, muted appearance |
+
+### Automatic Status Changes
+- When you call `open-plan`: Status automatically set to `working`
+- When plan content is updated: Status set to `updated`
+- When exiting plan mode: Call `set-status <path> done`
+
+### Manual Status Changes
+Users can manually mark plans as done or reactivate them via hover buttons in the web UI.
+
+### Example Workflow
+```bash
+# Start working on a plan (sets status to 'working')
+node cli.js open-plan ~/.claude/plans/my-feature.md
+
+# ... do work ...
+
+# Mark plan as done when complete
+node cli.js set-status ~/.claude/plans/my-feature.md done
+```
 
 ## Web UI Features
 

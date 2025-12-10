@@ -3,9 +3,11 @@ import {
   getPlans,
   getPlanById,
   removePlan,
+  updatePlanStatus,
   subscribeToEvents,
   type Plan,
   type PlanSummary,
+  type PlanStatus,
   type SSEEvent,
 } from '@/api/planCollab';
 
@@ -82,6 +84,7 @@ export function usePlanQueue(sessionId?: string) {
               pushedAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
               isOwn: sessionId ? event.plan.sessionId === sessionId : false,
+              status: 'pending',
               stats: { openComments: 0, pendingQuestions: 0, pendingAnswers: 0 },
             };
             setPlans((prev) => [newPlan, ...prev.filter((p) => p.id !== newPlan.id)]);
@@ -115,6 +118,18 @@ export function usePlanQueue(sessionId?: string) {
               setSelectedPlanId(null);
               setSelectedPlan(null);
             }
+          }
+          break;
+
+        case 'plan:status-changed':
+          if (event.planId && event.status) {
+            setPlans((prev) =>
+              prev.map((p) =>
+                p.id === event.planId
+                  ? { ...p, status: event.status!, updatedAt: new Date().toISOString() }
+                  : p
+              )
+            );
           }
           break;
 
@@ -227,6 +242,19 @@ export function usePlanQueue(sessionId?: string) {
     [sessionId]
   );
 
+  const setPlanStatus = useCallback(
+    async (id: string, status: PlanStatus) => {
+      try {
+        await updatePlanStatus(id, status);
+        // State update will happen via SSE
+      } catch (err) {
+        console.error('Failed to update plan status:', err);
+        throw err;
+      }
+    },
+    []
+  );
+
   const refreshPlans = useCallback(async () => {
     try {
       const loadedPlans = await getPlans(sessionId);
@@ -255,6 +283,7 @@ export function usePlanQueue(sessionId?: string) {
     error,
     selectPlan,
     deletePlan,
+    setPlanStatus,
     refreshPlans,
     refreshSelectedPlan,
   };

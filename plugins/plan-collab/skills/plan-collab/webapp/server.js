@@ -166,6 +166,7 @@ app.get('/api/plans', async (req, res) => {
         pushedAt: entry.pushedAt,
         updatedAt: entry.updatedAt,
         isOwn: sessionId ? entry.sessionId === sessionId : false,
+        status: entry.status || 'pending',
         stats: {
           openComments: feedback.comments.filter(c => c.status === 'OPEN').length,
           pendingQuestions: feedback.questions.filter(q => q.status === 'PENDING').length,
@@ -220,7 +221,8 @@ app.post('/api/plans', async (req, res) => {
       pushedAt: existingEntry?.pushedAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       contentHash,
-      previousContentHash: contentChanged ? existingEntry.contentHash : null
+      previousContentHash: contentChanged ? existingEntry.contentHash : null,
+      status: isUpdate ? (contentChanged ? 'updated' : existingEntry.status) : 'pending'
     };
 
     planQueue.set(planId, entry);
@@ -334,6 +336,40 @@ app.delete('/api/plans/:id', async (req, res) => {
   });
 
   res.json({ success: true });
+});
+
+// Update plan status
+app.patch('/api/plans/:id/status', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const validStatuses = ['pending', 'working', 'updated', 'done'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+  }
+
+  const entry = planQueue.get(id);
+  if (!entry) {
+    return res.status(404).json({ error: 'Plan not found in queue' });
+  }
+
+  const previousStatus = entry.status;
+  entry.status = status;
+  entry.updatedAt = new Date().toISOString();
+  planQueue.set(id, entry);
+
+  // Persist queue
+  await persistQueue();
+
+  // Broadcast status change
+  broadcastSSE({
+    type: 'plan:status-changed',
+    planId: id,
+    status,
+    previousStatus
+  });
+
+  res.json({ success: true, status, previousStatus });
 });
 
 // Add comment to specific plan
@@ -513,6 +549,8 @@ app.post('/api/plan', async (req, res) => {
 
     const effectiveSessionId = sessionId || 'legacy';
     const existingEntry = planQueue.get(planId);
+    const isUpdate = existingEntry !== undefined;
+    const contentChanged = existingEntry && existingEntry.contentHash !== contentHash;
 
     const entry = {
       id: planId,
@@ -522,7 +560,8 @@ app.post('/api/plan', async (req, res) => {
       name: path.basename(planPath, '.md'),
       pushedAt: existingEntry?.pushedAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      contentHash
+      contentHash,
+      status: isUpdate ? (contentChanged ? 'updated' : existingEntry.status) : 'pending'
     };
 
     planQueue.set(planId, entry);
