@@ -115,6 +115,7 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
   const renderContent = useCallback(() => {
     const elements: JSX.Element[] = [];
     const lines = processedContent.split("\n");
+    let firstH1Skipped = false;
 
     lines.forEach((line, lineIndex) => {
       // Check if this line is a code block placeholder
@@ -191,6 +192,11 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
 
       // Headers
       if (line.startsWith("# ")) {
+        // Skip the first h1 since it's already rendered in the header
+        if (!firstH1Skipped) {
+          firstH1Skipped = true;
+          return;
+        }
         elements.push(
           <h1 key={lineIndex} className="text-3xl md:text-4xl font-bold mb-6 mt-8 text-foreground tracking-tight animate-fade-in">
             {line.slice(2)}

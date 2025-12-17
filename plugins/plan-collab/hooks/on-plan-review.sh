@@ -2,11 +2,25 @@
 # Plan review hook - triggered by AskUserQuestion or ExitPlanMode
 # Auto-opens plan-collab for collaborative review
 
-set -e
+# Don't use set -e - we want graceful handling of errors
+
+# DEBUG LOGGING
+mkdir -p ~/.plan-collab
+echo "[$(date)] ===== on-plan-review.sh triggered =====" >> ~/.plan-collab/hook-debug.log
 
 # Read hook input from stdin (JSON format per Claude Code docs)
 INPUT=$(cat)
+
+# Validate stdin - exit gracefully if empty (race condition workaround)
+if [ -z "$INPUT" ]; then
+  echo "[$(date)] ERROR: Empty input received, exiting gracefully" >> ~/.plan-collab/hook-debug.log
+  exit 0
+fi
+
+echo "[$(date)] Input: $INPUT" >> ~/.plan-collab/hook-debug.log
+
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
+echo "[$(date)] TOOL_NAME: $TOOL_NAME" >> ~/.plan-collab/hook-debug.log
 
 # Only proceed if we have a tool name
 [[ -z "$TOOL_NAME" ]] && exit 0
@@ -40,16 +54,21 @@ FLAG_DIR="$HOME/.plan-collab"
 PLAN_HASH=$(echo -n "$PLAN_PATH" | md5 -q 2>/dev/null || echo -n "$PLAN_PATH" | md5sum | cut -d' ' -f1)
 FLAG_FILE="$FLAG_DIR/browser_opened_$PLAN_HASH"
 
-# Start server if not running (idempotent, background)
-node "$SCRIPTS_DIR/cli.js" start-server --no-browser >/dev/null 2>&1 || true
-sleep 1
+# Run server start and plan open in background subshell
+# This allows the hook to exit quickly and avoid timeout issues
+(
+  # Start server if not running (idempotent)
+  node "$SCRIPTS_DIR/cli.js" start-server --no-browser >/dev/null 2>&1 || true
+  sleep 1
 
-# Open browser only once per plan
-if [[ ! -f "$FLAG_FILE" ]]; then
-  node "$SCRIPTS_DIR/cli.js" open-plan "$PLAN_PATH" >/dev/null 2>&1 &
-  mkdir -p "$FLAG_DIR"
-  touch "$FLAG_FILE"
-fi
+  # Open browser only once per plan
+  if [[ ! -f "$FLAG_FILE" ]]; then
+    node "$SCRIPTS_DIR/cli.js" open-plan "$PLAN_PATH" >/dev/null 2>&1 || true
+    mkdir -p "$FLAG_DIR"
+    touch "$FLAG_FILE"
+  fi
+) &
+disown
 
 # Output JSON with additionalContext for Mermaid guidance
 # Exit code 0 + JSON output = structured hook response
