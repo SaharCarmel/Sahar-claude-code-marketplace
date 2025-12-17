@@ -1,11 +1,11 @@
 ---
 name: linear-extended
-description: Manage Linear project milestones - list, create, update, delete milestones for projects. Use when user asks about project milestones, wants to track project phases (Alpha, Beta, Launch), or needs to modify milestone details. Triggers: "show milestones", "create milestone", "update milestone", "project phases", "milestone progress", "what are the milestones", "add milestone to project".
+description: Extended Linear operations - manage project milestones and download images from issues. Use for project phases (Alpha, Beta, Launch), milestone management, or extracting images/screenshots from issues. Triggers: "show milestones", "create milestone", "update milestone", "project phases", "download images from issue", "get issue images", "extract screenshots".
 ---
 
 # Linear Extended
 
-Milestone operations for Linear projects.
+Extended operations for Linear: milestones and issue image downloads.
 
 ## Setup
 
@@ -99,6 +99,30 @@ node <skill-dir>/scripts/project-get.js <project-name-or-id> [--with-milestones]
 Example:
 ```bash
 node <skill-dir>/scripts/project-get.js Candlekeep --with-milestones
+```
+
+## Download Issue Images
+
+Download images from a Linear issue (attachments and inline images from description):
+
+```bash
+node <skill-dir>/scripts/issue-images.js <issue-id> [--output-dir <path>] [--list-only]
+```
+
+Options:
+- `--output-dir <path>`: Directory to save images (default: ./linear-images)
+- `--list-only`: Show image URLs without downloading
+
+Examples:
+```bash
+# Download all images from issue CND-121
+node <skill-dir>/scripts/issue-images.js CND-121
+
+# List images without downloading
+node <skill-dir>/scripts/issue-images.js CND-121 --list-only
+
+# Save to specific directory
+node <skill-dir>/scripts/issue-images.js CND-121 --output-dir /tmp/issue-images
 ```
 
 ## Output
