@@ -1,0 +1,11 @@
+{
+  "name": "sdlc",
+  "version": "1.0.0",
+  "description": "Software Development Lifecycle tools for project management, issue tracking, and backlog organization",
+  "author": {
+    "name": "Sahar Carmel",
+    "email": "sahar@example.com"
+  },
+  "license": "MIT",
+  "keywords": ["sdlc", "project-management", "agile", "issues", "backlog"]
+}

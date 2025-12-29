@@ -51,6 +51,17 @@
       },
       "source": "./plugins/plan-collab",
       "category": "productivity"
+    },
+    {
+      "name": "sdlc",
+      "description": "Software Development Lifecycle tools - project management, issue tracking, and backlog organization",
+      "version": "1.0.0",
+      "author": {
+        "name": "Sahar Carmel",
+        "email": "sahar@example.com"
+      },
+      "source": "./plugins/sdlc",
+      "category": "productivity"
     }
   ]
 }
