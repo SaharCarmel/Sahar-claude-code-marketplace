@@ -1,125 +1,100 @@
 # Sahar's Claude Code Marketplace
 
-A curated collection of Claude Code plugins for personal use and sharing.
+A curated collection of plugins that extend Claude Code's functionality with specialized skills for planning, project management, and content creation.
 
-## What is this?
+For more information about skills, check out:
+- [What are skills?](https://support.claude.com/en/articles/12512176-what-are-skills)
+- [Using skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude)
+- [How to create custom skills](https://support.claude.com/en/articles/12512198-creating-custom-skills)
 
-This is a personal [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces) - a centralized catalog of plugins that extend Claude Code's functionality. It enables version management, easy distribution, and organized plugin discovery.
+# About This Repository
 
-## Using this Marketplace
+This repository contains plugins that demonstrate practical workflows for Claude Code. These plugins range from collaborative planning tools to project management integrations to content generation utilities.
 
-### In Claude Code
+Each plugin is self-contained with its own `plugin.json` manifest and skill definitions. Browse through these plugins to understand different patterns and approaches, or install them directly into your Claude Code environment.
 
-To use plugins from this marketplace in your Claude Code setup:
+# Available Plugins
 
-1. **Add the marketplace to your project:**
+| Plugin | Description |
+|--------|-------------|
+| `plan-collab` | Collaborative plan review system with web interface for team feedback |
+| `linear-extended` | Extended Linear operations including project milestones management |
+| `content-studio` | Generate social media content from your coding work |
 
-   Create or update `.claude/config.json` in your project:
+# Try in Claude Code
 
-   ```json
-   {
-     "marketplaces": [
-       {
-         "name": "sahar-marketplace",
-         "source": "github",
-         "repo": "SaharCarmel/Sahar-claude-code-marketplace"
-       }
-     ]
-   }
-   ```
-
-2. **Install plugins:**
-
-   Once the marketplace is configured, Claude Code will be able to discover and install plugins from this catalog.
-
-### Directly from GitHub
-
-Alternatively, you can reference individual plugin repositories directly without using the marketplace.
-
-## Available Plugins
-
-Currently, this marketplace is starting empty and will be populated with curated plugins over time.
-
-Check `.claude-plugin/marketplace.json` for the complete list of available plugins.
-
-## Marketplace Structure
+You can register this repository as a Claude Code plugin marketplace by running:
 
 ```
-Sahar-claude-code-marketplace/
+/plugin marketplace add SaharCarmel/Sahar-claude-code-marketplace
+```
+
+Then, to install a specific plugin:
+1. Run `/plugin` and select `Browse and install plugins`
+2. Select `sahar-marketplace`
+3. Select the plugin you want to install
+4. Select `Install now`
+
+Alternatively, install plugins directly via:
+
+```
+/plugin install plan-collab@sahar-marketplace
+/plugin install linear-extended@sahar-marketplace
+/plugin install content-studio@sahar-marketplace
+```
+
+After installing a plugin, you can use its skills by mentioning them. For instance, if you install `plan-collab`, you can ask Claude Code to review a plan collaboratively with your team.
+
+# Plugin Structure
+
+Plugins follow the standard Claude Code plugin format:
+
+```
+plugin-name/
 ├── .claude-plugin/
-│   └── marketplace.json          # Plugin catalog
-├── schema/
-│   └── marketplace-schema.json   # JSON schema for validation
-├── scripts/
-│   ├── add-plugin.sh            # Helper to add new plugins
-│   └── validate.sh              # Validate marketplace.json
-└── README.md                     # This file
+│   └── plugin.json          # Plugin metadata (required)
+├── skills/
+│   └── skill-name/
+│       └── SKILL.md         # Skill instructions
+├── hooks/                   # Optional lifecycle hooks
+└── README.md
 ```
 
-## Adding Plugins to this Marketplace
+# Creating a Basic Skill
 
-### Manual Method
+Skills are simple to create - just a folder with a `SKILL.md` file containing YAML frontmatter and instructions:
 
-1. Edit `.claude-plugin/marketplace.json`
-2. Add a new entry to the `plugins` array:
+```markdown
+---
+name: my-skill-name
+description: A clear description of what this skill does and when to use it
+---
 
-```json
-{
-  "name": "my-plugin",
-  "description": "What this plugin does",
-  "version": "1.0.0",
-  "author": "Your Name",
-  "source": {
-    "type": "github",
-    "repo": "username/plugin-repo"
-  }
-}
+# My Skill Name
+
+[Add your instructions here that Claude will follow when this skill is active]
+
+## Examples
+- Example usage 1
+- Example usage 2
+
+## Guidelines
+- Guideline 1
+- Guideline 2
 ```
 
-3. Validate the JSON structure
-4. Commit and push
+The frontmatter requires only two fields:
+- `name` - A unique identifier for your skill (lowercase, hyphens for spaces)
+- `description` - A complete description of what the skill does and when to use it
 
-### Using the Helper Script
+# Maintenance
 
-```bash
-./scripts/add-plugin.sh
-```
+This is a personal marketplace maintained by Sahar Carmel. Plugins are curated based on workflow needs and quality standards.
 
-The script will interactively prompt for plugin details and update the marketplace.json file.
+# License
 
-## Plugin Sources
-
-Plugins can be sourced from:
-
-- **GitHub repositories:** `{"type": "github", "repo": "owner/repo"}`
-- **Git URLs:** `{"type": "url", "url": "https://gitlab.com/user/plugin.git"}`
-- **Local paths:** `"./plugins/my-plugin"` (relative to marketplace root)
-
-## Validation
-
-To validate the marketplace structure:
-
-```bash
-./scripts/validate.sh
-```
-
-This checks that the marketplace.json file conforms to the Claude Code marketplace schema.
-
-## Plugin Development
-
-Interested in creating plugins for Claude Code? Check out:
-
-- [Claude Code Plugin Documentation](https://code.claude.com/docs/en/plugins)
-- [Plugin Marketplace Documentation](https://code.claude.com/docs/en/plugin-marketplaces)
-
-## Maintenance
-
-This is a private personal marketplace maintained by Sahar Carmel. Plugins are curated based on personal workflow needs and quality standards.
-
-## License
-
-Individual plugins may have their own licenses. Check each plugin's repository for details.
+Individual plugins may have their own licenses. Check each plugin's directory for details.
 
 ---
 
-*Built for Claude Code - Anthropic's official CLI for Claude*
+*Built for [Claude Code](https://claude.ai/code) - Anthropic's official CLI for Claude*
