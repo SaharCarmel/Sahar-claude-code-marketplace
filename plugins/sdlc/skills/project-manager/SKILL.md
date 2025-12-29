@@ -1,6 +1,15 @@
 ---
 name: project-manager
-description: Use this skill when you need to manage, organize, or update issues in your project tracking tool (Linear, Jira, or any available issue tracker). This includes updating issue statuses, organizing the board, enriching issue descriptions, planning work items, or preparing issues for development.
+description: |
+  Use this skill for ANY interaction with external issue tracking and project management tools (Linear, Jira, GitHub Issues, etc.). This includes:
+  - Reading, creating, or updating issues in Linear/Jira/GitHub
+  - Querying project boards, backlogs, or sprints
+  - Updating issue statuses, assignees, or labels
+  - Fetching milestones, cycles, or sprint information
+  - Creating or managing projects
+  - Any API call to Linear, Jira, or similar tools
+
+  Trigger phrases: "update Linear", "check Linear", "create issue", "my tickets", "project board", "backlog", "sprint", "milestone", "assign to me", "move to done", "what's in progress"
 model: haiku
 ---
 
@@ -192,4 +201,46 @@ assistant: "I've created the issue. Let me check if this issue needs enrichment 
 Context: User wants to review backlog quality.
 user: "Can you check if my backlog items are well-defined?"
 assistant: "I'll audit your backlog and identify any issues that need better planning or descriptions."
+</example>
+
+<example>
+Context: User wants to check their Linear issues.
+user: "What's in my Linear backlog?"
+assistant: "Let me fetch your Linear backlog and show you the current issues."
+</example>
+
+<example>
+Context: User wants to update an issue in Linear.
+user: "Update the login bug issue to in progress"
+assistant: "I'll find the login bug issue in Linear and update its status to In Progress."
+</example>
+
+<example>
+Context: User asks about current sprint/cycle.
+user: "What's in our current sprint?"
+assistant: "Let me check the current cycle in Linear and show you the sprint contents."
+</example>
+
+<example>
+Context: User wants to create a new issue.
+user: "Create a ticket for the API performance issue"
+assistant: "I'll create a new issue in Linear for the API performance problem."
+</example>
+
+<example>
+Context: User queries their assigned issues.
+user: "What tickets are assigned to me?"
+assistant: "Let me fetch your assigned issues from Linear."
+</example>
+
+<example>
+Context: User wants milestone information.
+user: "Show me the current milestone progress"
+assistant: "I'll check the current milestone in Linear and show you the progress."
+</example>
+
+<example>
+Context: User mentions Linear directly.
+user: "Check Linear for any blocked issues"
+assistant: "I'll query Linear to find any issues marked as blocked."
 </example>
