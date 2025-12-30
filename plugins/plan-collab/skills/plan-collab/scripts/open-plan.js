@@ -206,6 +206,7 @@ export default async function openPlan(args) {
 
     const result = await response.json();
     planId = result.plan?.id;
+    const isUpdate = result.isUpdate;
 
     // Set status to 'working' since we're actively working on this plan
     if (planId) {
@@ -253,8 +254,8 @@ export default async function openPlan(args) {
     process.exit(1);
   }
 
-  // Open browser
-  if (!noBrowser) {
+  // Open browser only for new plans, not updates
+  if (!noBrowser && !isUpdate) {
     await openBrowser(planUrl);
   }
 
