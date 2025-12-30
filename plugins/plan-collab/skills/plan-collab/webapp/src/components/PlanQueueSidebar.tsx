@@ -100,7 +100,7 @@ export function PlanQueueSidebar({
               <li
                 key={plan.id}
                 style={{ animationDelay: `${index * 50}ms` }}
-                className="animate-fade-in"
+                className="animate-fade-in hover:z-10 relative"
               >
                 <button
                   onClick={() => onSelect(plan.id)}
