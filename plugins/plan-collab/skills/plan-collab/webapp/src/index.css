@@ -236,4 +236,15 @@
     background-color: hsl(var(--muted));
     border-radius: 3px;
   }
+
+  /* Gradient fade for truncated content - indicates more content exists */
+  .content-fade-right {
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  }
+
+  /* Expandable content block positioning */
+  .expandable-content {
+    @apply relative;
+  }
 }

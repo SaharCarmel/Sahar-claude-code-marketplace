@@ -5,6 +5,7 @@ import { MermaidDiagram } from "./MermaidDiagram";
 import { LinkedIssuesPanel } from "./LinkedIssuesPanel";
 import { TextSelectionPopup } from "./TextSelectionPopup";
 import { CodeBlock } from "./CodeBlock";
+import { ExpandableContent } from "./ExpandableContent";
 import {
   Table,
   TableBody,
@@ -154,7 +155,12 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
           );
 
           elements.push(
-            <div key={`table-${lineIndex}`} className="my-6 overflow-x-auto">
+            <ExpandableContent
+              key={`table-${lineIndex}`}
+              content={tableBlock.content}
+              title="Table"
+              className="my-6"
+            >
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -173,7 +179,7 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
                   ))}
                 </TableBody>
               </Table>
-            </div>
+            </ExpandableContent>
           );
         }
         return;
