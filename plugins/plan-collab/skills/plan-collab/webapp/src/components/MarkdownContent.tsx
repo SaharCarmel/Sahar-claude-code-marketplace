@@ -6,6 +6,7 @@ import { LinkedIssuesPanel } from "./LinkedIssuesPanel";
 import { TextSelectionPopup } from "./TextSelectionPopup";
 import { CodeBlock } from "./CodeBlock";
 import { ExpandableContent } from "./ExpandableContent";
+import { InlineCode } from "./InlineCode";
 import {
   Table,
   TableBody,
@@ -288,7 +289,19 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
       else if (line.trim() !== "") {
         let renderedLine: React.ReactNode = line;
 
-        // Handle bold text
+        // Helper to process inline code in a string
+        const processInlineCode = (text: string, keyPrefix: string): React.ReactNode => {
+          const parts = text.split(/(`[^`]+`)/);
+          if (parts.length === 1) return text;
+          return parts.map((part, i) => {
+            if (part.startsWith("`") && part.endsWith("`")) {
+              return <InlineCode key={`${keyPrefix}-code-${i}`}>{part.slice(1, -1)}</InlineCode>;
+            }
+            return part;
+          });
+        };
+
+        // Handle bold text and inline code
         renderedLine = line.split(/(\*\*[^*]+\*\*)/).map((part, i) => {
           if (part.startsWith("**") && part.endsWith("**")) {
             const boldText = part.slice(2, -2);
@@ -328,22 +341,12 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
             }
           });
 
+          // Process inline code if still a string
+          if (typeof textPart === 'string') {
+            return processInlineCode(textPart, `${i}`);
+          }
           return textPart;
         });
-
-        // Handle inline code
-        if (typeof renderedLine === 'string') {
-          renderedLine = renderedLine.split(/(`[^`]+`)/).map((part, i) => {
-            if (part.startsWith("`") && part.endsWith("`")) {
-              return (
-                <code key={i} className="bg-muted px-2 py-1 rounded text-base font-mono">
-                  {part.slice(1, -1)}
-                </code>
-              );
-            }
-            return part;
-          });
-        }
 
         elements.push(
           <p key={lineIndex} className="text-lg md:text-xl leading-[1.8] mb-6 text-foreground/90 animate-fade-in">
