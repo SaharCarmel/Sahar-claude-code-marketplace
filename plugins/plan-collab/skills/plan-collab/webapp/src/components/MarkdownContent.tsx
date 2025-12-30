@@ -126,8 +126,21 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
         const block = codeBlocks[blockIndex];
 
         if (block.type === "mermaid") {
+          const diagramId = `diagram-${lineIndex}`;
+          const diagramCommentCount = doc.comments?.filter(c =>
+            c.text?.startsWith(`[DIAGRAM:${diagramId}]`)
+          ).length || 0;
+
           elements.push(
-            <MermaidDiagram key={`mermaid-${lineIndex}`} chart={block.content} />
+            <MermaidDiagram
+              key={`mermaid-${lineIndex}`}
+              chart={block.content}
+              diagramId={diagramId}
+              commentCount={diagramCommentCount}
+              onAddComment={onAddComment ? (id, comment) => {
+                onAddComment(`[DIAGRAM:${id}]`, comment, '', '');
+              } : undefined}
+            />
           );
         } else {
           // Syntax-highlighted code block
@@ -341,7 +354,7 @@ export function MarkdownContent({ document: doc, activeHighlight, onHighlightCli
     });
 
     return elements;
-  }, [processedContent, codeBlocks, tables, doc.highlights, activeHighlight, onHighlightClick]);
+  }, [processedContent, codeBlocks, tables, doc.highlights, doc.comments, activeHighlight, onHighlightClick, onAddComment]);
 
   return (
     <article className="prose-reader max-w-none">

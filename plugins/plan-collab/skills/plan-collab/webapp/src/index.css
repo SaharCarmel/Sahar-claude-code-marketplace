@@ -247,4 +247,17 @@
   .expandable-content {
     @apply relative;
   }
+
+  /* Cursor utilities for zoom/pan interactions */
+  .cursor-zoom-in {
+    cursor: zoom-in;
+  }
+
+  .cursor-grab {
+    cursor: grab;
+  }
+
+  .cursor-grabbing {
+    cursor: grabbing;
+  }
 }
