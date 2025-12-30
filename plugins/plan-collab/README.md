@@ -62,22 +62,27 @@ These appear in the dedicated Questions Panel for easy answering.
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Claude Code    │────▶│  Express API    │────▶│   Web UI        │
-│  (writes plan)  │     │  (serves data)  │     │  (you review)   │
+│  Claude Code    │────▶│   plan-collab   │────▶│   Web UI        │
+│  (hook trigger) │     │   (local API)   │     │  (you review)   │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
-                               │
-                               ▼
-                        ┌─────────────────┐
-                        │  Feedback JSON  │
-                        │  (your comments)│
-                        └─────────────────┘
+        │                       │                       │
+        │                       ▼                       │
+        │               ┌───────────────┐               │
+        │               │ Plan + Questions              │
+        │               │   (pushed)    │               │
+        │               └───────────────┘               │
+        │                                               │
+        └───────────────── fetches ◀────────────────────┘
+                        your feedback
 ```
 
-1. Claude writes a plan to `~/.claude/plans/`
-2. The plugin's hook detects this and opens the web UI
-3. You review the plan and add comments/answers
-4. Feedback is stored as `.feedback.json` alongside the plan
-5. Claude reads your feedback and proceeds accordingly
+1. Claude Code writes a plan and triggers the plugin hook
+2. The hook pushes the plan content AND questions to the local webapp
+3. Your browser opens automatically to review
+4. You add comments and answer Claude's questions in the webapp
+5. Claude Code fetches your feedback and continues accordingly
+
+The plugin runs entirely locally - your plans and feedback never leave your machine.
 
 ## Tech Stack
 
