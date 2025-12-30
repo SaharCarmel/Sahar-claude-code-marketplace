@@ -57,6 +57,12 @@ export interface PlanAnswer {
 // Plan status type
 export type PlanStatus = 'pending' | 'working' | 'updated' | 'done';
 
+// Project context for identifying plan origin
+export interface ProjectContext {
+  name: string;
+  url: string | null;
+}
+
 // New types for queue system
 export interface PlanSummary {
   id: string;
@@ -68,6 +74,7 @@ export interface PlanSummary {
   updatedAt: string;
   isOwn: boolean;
   status: PlanStatus;
+  project: ProjectContext | null;
   stats: {
     openComments: number;
     pendingQuestions: number;
@@ -77,7 +84,7 @@ export interface PlanSummary {
 
 export interface SSEEvent {
   type: 'connected' | 'plan:added' | 'plan:updated' | 'plan:removed' | 'plan:status-changed' | 'comment:added' | 'comment:updated' | 'question:answered';
-  plan?: Partial<Plan> & { contentChanged?: boolean };
+  plan?: Partial<Plan> & { contentChanged?: boolean; project?: ProjectContext | null };
   planId?: string;
   status?: PlanStatus;
   previousStatus?: PlanStatus;

@@ -118,6 +118,12 @@ export default async function openPlan(args) {
   const planPath = args.find((a) => !a.startsWith('--'));
   const noBrowser = args.includes('--no-browser');
 
+  // Parse project context arguments
+  const projectNameIdx = args.indexOf('--project-name');
+  const projectUrlIdx = args.indexOf('--project-url');
+  const projectName = projectNameIdx !== -1 ? args[projectNameIdx + 1] : null;
+  const projectUrl = projectUrlIdx !== -1 ? args[projectUrlIdx + 1] : null;
+
   if (!planPath) {
     console.error(
       JSON.stringify({ error: 'Usage: open-plan <plan-path> [--no-browser]' })
@@ -191,7 +197,11 @@ export default async function openPlan(args) {
     const response = await fetch(`${serverInfo.url}/api/plans`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ planPath: absolutePath, sessionId })
+      body: JSON.stringify({
+        planPath: absolutePath,
+        sessionId,
+        project: projectName ? { name: projectName, url: projectUrl || null } : null
+      })
     });
 
     if (!response.ok) {

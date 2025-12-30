@@ -167,6 +167,7 @@ app.get('/api/plans', async (req, res) => {
         updatedAt: entry.updatedAt,
         isOwn: sessionId ? entry.sessionId === sessionId : false,
         status: entry.status || 'pending',
+        project: entry.project || null,
         stats: {
           openComments: feedback.comments.filter(c => c.status === 'OPEN').length,
           pendingQuestions: feedback.questions.filter(q => q.status === 'PENDING').length,
@@ -190,7 +191,7 @@ app.get('/api/plans', async (req, res) => {
 
 // Add or update plan in queue
 app.post('/api/plans', async (req, res) => {
-  const { planPath, sessionId } = req.body;
+  const { planPath, sessionId, project } = req.body;
 
   if (!planPath) {
     return res.status(400).json({ error: 'planPath is required' });
@@ -222,7 +223,8 @@ app.post('/api/plans', async (req, res) => {
       updatedAt: new Date().toISOString(),
       contentHash,
       previousContentHash: contentChanged ? existingEntry.contentHash : null,
-      status: isUpdate ? (contentChanged ? 'updated' : existingEntry.status) : 'pending'
+      status: isUpdate ? (contentChanged ? 'updated' : existingEntry.status) : 'pending',
+      project: project || existingEntry?.project || null
     };
 
     planQueue.set(planId, entry);
@@ -245,6 +247,7 @@ app.post('/api/plans', async (req, res) => {
         sessionId: effectiveSessionId,
         title,
         name: entry.name,
+        project: entry.project || null,
         contentChanged
       }
     });

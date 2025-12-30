@@ -1,4 +1,4 @@
-import { FileText, Clock, MessageSquare, User, Trash2, RefreshCw, CheckCircle, RotateCcw } from "lucide-react";
+import { FileText, Clock, MessageSquare, User, Trash2, RefreshCw, CheckCircle, RotateCcw, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,13 @@ function formatTimeAgo(dateString: string): string {
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   return `${diffDays}d ago`;
+}
+
+function getProjectDisplayName(project: PlanSummary['project']): string | null {
+  if (!project?.name) return null;
+  // For org/repo format, show just the repo name
+  const parts = project.name.split('/');
+  return parts[parts.length - 1];
 }
 
 export function PlanQueueSidebar({
@@ -145,6 +152,18 @@ export function PlanQueueSidebar({
                       <p className="text-xs text-sidebar-foreground/60 mt-1 truncate">
                         {plan.name}
                       </p>
+
+                      {plan.project?.name && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <span
+                            className="text-[10px] text-sidebar-foreground/40 flex items-center gap-0.5 truncate"
+                            title={plan.project.name}
+                          >
+                            <Folder className="w-2.5 h-2.5 shrink-0" />
+                            {getProjectDisplayName(plan.project)}
+                          </span>
+                        </div>
+                      )}
 
                       <div className="flex items-center gap-3 mt-2 text-xs text-sidebar-foreground/50">
                         <span className="flex items-center gap-1">
