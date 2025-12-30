@@ -26,6 +26,11 @@ export interface PlanComment {
   resolvedAt?: string;
 }
 
+export interface QuestionOption {
+  label: string;
+  description?: string;
+}
+
 export interface PlanQuestion {
   id: string;
   questionText: string;
@@ -33,6 +38,9 @@ export interface PlanQuestion {
   timestamp: string;
   status: 'PENDING' | 'ANSWERED';
   answeredAt?: string;
+  // Multiple choice support
+  options?: QuestionOption[];
+  multiSelect?: boolean;
 }
 
 export interface PlanAnswer {
@@ -42,6 +50,8 @@ export interface PlanAnswer {
   answer: string;
   timestamp: string;
   acknowledged: boolean;
+  // For multiple choice - which options were selected
+  selectedOptions?: string[];
 }
 
 // Plan status type
@@ -156,12 +166,18 @@ export async function resolveCommentForPlan(planId: string, commentId: string): 
 export async function answerQuestionForPlan(
   planId: string,
   questionId: string,
-  answer: string
+  answer: string,
+  selectedOptions?: string[]
 ): Promise<{ answer: PlanAnswer; question: PlanQuestion }> {
+  const body: { answer: string; selectedOptions?: string[] } = { answer };
+  if (selectedOptions && selectedOptions.length > 0) {
+    body.selectedOptions = selectedOptions;
+  }
+
   const res = await fetch(`${API_BASE}/plans/${planId}/questions/${questionId}/answer`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ answer }),
+    body: JSON.stringify(body),
   });
   const data = await res.json();
   if (!res.ok) {

@@ -121,11 +121,11 @@ const Index = () => {
   );
 
   const handleAnswerQuestion = useCallback(
-    async (questionId: string, answer: string) => {
+    async (questionId: string, answer: string, selectedOptions?: string[]) => {
       if (!selectedPlanId) return;
 
       try {
-        await answerQuestionForPlan(selectedPlanId, questionId, answer);
+        await answerQuestionForPlan(selectedPlanId, questionId, answer, selectedOptions);
         // State update happens via SSE
       } catch (err) {
         console.error("Failed to answer question:", err);
@@ -257,7 +257,7 @@ const Index = () => {
               isOpen={showQuestions}
               onToggle={() => setShowQuestions(!showQuestions)}
               onAnswerQuestion={handleAnswerQuestion}
-              pendingQuestions={selectedPlan.questions.filter((q) => q.status === "PENDING")}
+              pendingQuestions={selectedPlan.questions}
             />
           </>
         ) : (

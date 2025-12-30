@@ -4,9 +4,10 @@
  * Usage: node start-server.js [--port <port>]
  */
 
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 import {
   loadConfig,
   updateConfig,
@@ -19,7 +20,33 @@ import { findAvailablePort, waitForServer, openBrowser } from './lib/server-mana
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WEBAPP_DIR = join(__dirname, '..', 'webapp');
 
+/**
+ * Ensure webapp dependencies are installed (lazy initialization)
+ * This allows the plugin to work on fresh installs without pre-bundled node_modules
+ */
+async function ensureDependencies() {
+  const nodeModulesPath = join(WEBAPP_DIR, 'node_modules');
+  const viteBinPath = join(nodeModulesPath, '.bin', 'vite');
+
+  // Check if dependencies exist and vite binary is accessible
+  if (!existsSync(nodeModulesPath) || !existsSync(viteBinPath)) {
+    console.error(JSON.stringify({ status: 'installing_dependencies', message: 'First run - installing webapp dependencies...' }));
+    try {
+      execSync('npm install', {
+        cwd: WEBAPP_DIR,
+        stdio: 'inherit',
+        timeout: 120000 // 2 minute timeout
+      });
+    } catch (err) {
+      throw new Error(`Failed to install dependencies: ${err.message}`);
+    }
+  }
+}
+
 export default async function startServer(args) {
+  // Ensure dependencies are installed (lazy initialization for fresh installs)
+  await ensureDependencies();
+
   // Check if already running
   if (await isServerRunning()) {
     const info = await getServerInfo();
@@ -44,12 +71,13 @@ export default async function startServer(args) {
   const noBrowser = args.includes('--no-browser');
 
   try {
-    // Start Next.js in development mode (for hot reloading during development)
-    const serverProcess = spawn('npm', ['run', 'dev'], {
+    // Start both API server (server.js on 3456) and Vite frontend
+    const serverProcess = spawn('npm', ['run', 'start'], {
       cwd: WEBAPP_DIR,
       detached: true,
       stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env, PORT: String(port) }
+      shell: true,
+      env: { ...process.env, PORT: String(port), API_PORT: '3456' }
     });
 
     // Collect stderr for error reporting

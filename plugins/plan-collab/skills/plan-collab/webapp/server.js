@@ -446,6 +446,58 @@ app.patch('/api/plans/:planId/comments/:commentId', async (req, res) => {
   res.json({ comment });
 });
 
+// Add question to specific plan
+app.post('/api/plans/:planId/questions', async (req, res) => {
+  const { planId } = req.params;
+  const entry = planQueue.get(planId);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Plan not found in queue' });
+  }
+
+  const { questionText, context, options, multiSelect } = req.body;
+
+  if (!questionText?.trim()) {
+    return res.status(400).json({ error: 'questionText is required' });
+  }
+
+  // Validate options if provided
+  if (options && !Array.isArray(options)) {
+    return res.status(400).json({ error: 'options must be an array' });
+  }
+
+  const feedback = await loadFeedback(entry.path);
+
+  const newQuestion = {
+    id: `q_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
+    questionText: questionText.trim(),
+    context: context?.trim() || '',
+    timestamp: new Date().toISOString(),
+    status: 'PENDING'
+  };
+
+  // Add multiple choice fields if provided
+  if (options && options.length > 0) {
+    newQuestion.options = options.map(opt => ({
+      label: typeof opt === 'string' ? opt : opt.label,
+      description: typeof opt === 'string' ? '' : (opt.description || '')
+    }));
+    newQuestion.multiSelect = !!multiSelect;
+  }
+
+  feedback.questions.push(newQuestion);
+  await saveFeedback(entry.path, feedback);
+
+  // Broadcast question added
+  broadcastSSE({
+    type: 'question:added',
+    planId,
+    question: newQuestion
+  });
+
+  res.status(201).json({ question: newQuestion });
+});
+
 // Answer question for specific plan
 app.post('/api/plans/:planId/questions/:questionId/answer', async (req, res) => {
   const { planId, questionId } = req.params;
@@ -455,7 +507,7 @@ app.post('/api/plans/:planId/questions/:questionId/answer', async (req, res) => 
     return res.status(404).json({ error: 'Plan not found in queue' });
   }
 
-  const { answer } = req.body;
+  const { answer, selectedOptions } = req.body;
 
   const feedback = await loadFeedback(entry.path);
   const question = feedback.questions.find(q => q.id === questionId);
@@ -464,14 +516,25 @@ app.post('/api/plans/:planId/questions/:questionId/answer', async (req, res) => 
     return res.status(404).json({ error: 'Question not found' });
   }
 
+  // For multiple choice, build answer string from selected options if not provided
+  let answerText = answer;
+  if (!answerText && selectedOptions && selectedOptions.length > 0) {
+    answerText = selectedOptions.join(', ');
+  }
+
   const newAnswer = {
     id: `a_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
     questionId,
     question: question.questionText,
-    answer,
+    answer: answerText || '',
     timestamp: new Date().toISOString(),
     acknowledged: false
   };
+
+  // Include selected options for multiple choice questions
+  if (selectedOptions && selectedOptions.length > 0) {
+    newAnswer.selectedOptions = selectedOptions;
+  }
 
   feedback.answers.push(newAnswer);
   question.status = 'ANSWERED';

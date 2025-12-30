@@ -31,6 +31,7 @@ Commands:
   start-server              Start the web server (finds available port)
   stop-server [--force]     Stop the server gracefully (or force kill)
   open-plan <path>          Register plan and open in browser
+  add-question <path> <q>   Add a question for user to answer
   get-feedback [--all]      Fetch pending feedback (or all feedback)
   sync-plan <path>          Sync plan content to server
   set-status <id|path> <s>  Set plan status (pending|working|updated|done)
@@ -56,6 +57,7 @@ async function main() {
     'start-server': './start-server.js',
     'stop-server': './stop-server.js',
     'open-plan': './open-plan.js',
+    'add-question': './add-question.js',
     'get-feedback': './get-feedback.js',
     'sync-plan': './sync-plan.js',
     'set-status': './set-status.js',
