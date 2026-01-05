@@ -9,7 +9,7 @@ description: |
   - Creating or managing projects
   - Any API call to Linear, Jira, or similar tools
 
-  Trigger phrases: "update Linear", "check Linear", "create issue", "my tickets", "project board", "backlog", "sprint", "milestone", "assign to me", "move to done", "what's in progress"
+  Trigger phrases: "update Linear", "check Linear", "create issue", "my tickets", "project board", "backlog", "sprint", "milestone", "assign to me", "move to done", "what's in progress", "decompose", "decompose plan", "break down plan", "create issues from plan"
 model: haiku
 ---
 
@@ -149,6 +149,86 @@ When asked to bring issues for coding:
 6. Offer to enrich any that are almost ready
 ```
 
+---
+
+## /decompose Command
+
+Break down the current Claude Code plan into Linear sub-issues with E2E test criteria. This helps Claude Code handle complex tasks by splitting them into smaller, testable increments.
+
+### When to Use
+- User invokes `/decompose` or says "decompose plan", "break down plan", "create issues from plan"
+- After a Claude Code plan has been created and the user wants to track it in Linear
+
+### Flow
+```
+1. Read sdlc.md for team/project context
+2. Analyze the plan from conversation memory
+3. Break into testable increments
+4. Generate E2E tests for each increment
+5. Ask: "Create new parent issue or attach to existing?"
+6. Show preview with target team/project
+7. Wait for user confirmation
+8. Create issues in Linear
+9. Update sdlc.md with created issue IDs
+```
+
+### Increment Guidelines
+
+Each sub-issue MUST:
+- **Deliver a testable artifact** - Something verifiable from user's perspective
+- **Be self-contained** - Claude Code can complete it in one session
+- **Have E2E test criteria** - Format: "User can [action] and [expected result]"
+
+When breaking down:
+- Prefer smaller increments over larger ones (Claude Code handles small tasks better)
+- Each increment = one testable deliverable
+- Consider dependencies between increments
+- Order by dependency chain (what must be done first)
+
+### E2E Test Format
+
+For each increment, include:
+- **Happy path**: 1-2 user scenarios
+- **Edge cases**: 1-2 boundary conditions
+- Format: `- [ ] User can [action] and [expected result]`
+
+### Sub-Issue Description Template
+
+When creating sub-issues, use this structure in the description:
+
+```markdown
+## Summary
+[What this increment delivers]
+
+## Deliverable
+[The testable artifact - what can be demo'd/verified]
+
+## E2E Test Scenarios
+
+### Happy Path
+- [ ] User can [action] and [expected result]
+- [ ] [Additional scenario if needed]
+
+### Edge Cases
+- [ ] [Edge case scenario]
+
+## Implementation Notes
+[Relevant context from the original plan]
+
+---
+*Created from Claude Code plan via /decompose*
+```
+
+### Confirmation Protocol
+
+Before creating any issues:
+1. Show the proposed breakdown with titles and E2E tests
+2. Display target: Team name, Project name
+3. Ask: "Create new parent issue or attach to existing [ID]?"
+4. Wait for explicit confirmation
+5. Only then create the issues
+6. Report created issue IDs back to user
+
 ## Communication Style
 - Be proactive but not intrusive
 - Always explain your reasoning
@@ -243,4 +323,28 @@ assistant: "I'll check the current milestone in Linear and show you the progress
 Context: User mentions Linear directly.
 user: "Check Linear for any blocked issues"
 assistant: "I'll query Linear to find any issues marked as blocked."
+</example>
+
+<example>
+Context: User wants to decompose a Claude Code plan into Linear issues.
+user: "/decompose"
+assistant: "I see we have a plan for adding the `/decompose` command. Let me break it into testable increments.
+
+Based on the plan, I propose these sub-issues:
+
+**1. Add /decompose section to SKILL.md**
+- Deliverable: Skill documentation with decompose workflow
+- E2E: User can invoke `/decompose` and see the skill activate
+
+**2. Test decompose flow end-to-end**
+- Deliverable: Working decompose command creating Linear issues
+- E2E: User can run `/decompose` on a plan and see sub-issues created in Linear
+
+**Target:** Team 'Engineering', Project 'Claude Code Plugins'
+
+Would you like to:
+- Create a new parent issue for this work, or
+- Attach these as sub-issues to an existing issue?
+
+Please confirm and I'll create the issues."
 </example>
