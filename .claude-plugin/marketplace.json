@@ -19,7 +19,7 @@
       "source": "./plugins/linear-extended",
       "category": "productivity",
       "skills": [
-        "./plugins/linear-extended/skills/linear-extended"
+        "./skills/linear-extended"
       ]
     },
     {
@@ -33,7 +33,7 @@
       "source": "./plugins/plan-collab",
       "category": "productivity",
       "skills": [
-        "./plugins/plan-collab/skills/plan-collab"
+        "./skills/plan-collab"
       ]
     },
     {
@@ -47,8 +47,8 @@
       "source": "./plugins/sdlc",
       "category": "productivity",
       "skills": [
-        "./plugins/sdlc/skills/project-manager",
-        "./plugins/sdlc/skills/decompose"
+        "./skills/project-manager",
+        "./skills/decompose"
       ]
     },
     {
@@ -62,7 +62,7 @@
       "source": "./plugins/e2e-tester",
       "category": "productivity",
       "skills": [
-        "./plugins/e2e-tester/skills/e2e-tester"
+        "./skills/e2e-tester"
       ]
     }
   ]
