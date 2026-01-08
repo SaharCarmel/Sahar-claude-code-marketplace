@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listSessions, createSession } from '@/lib/data-store';
+import { broadcastEvent } from '@/lib/sse-manager';
 import type { TestSession } from '@/lib/types';
 
 export async function GET() {
@@ -33,6 +34,13 @@ export async function POST(request: NextRequest) {
       mode: body.mode || 'webapp',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+    });
+
+    // Broadcast session creation for dashboard real-time updates
+    broadcastEvent({
+      type: 'session:created',
+      sessionId: session.id,
+      session,
     });
 
     return NextResponse.json(session, { status: 201 });

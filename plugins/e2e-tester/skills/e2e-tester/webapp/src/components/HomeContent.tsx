@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { TestList } from '@/components/TestList';
 import { TestProgress } from '@/components/TestProgress';
+import { Dashboard } from '@/components/Dashboard';
 import type { TestSession, TestStatus, UserStep } from '@/lib/types';
 
 export function HomeContent() {
@@ -15,17 +18,18 @@ export function HomeContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Skip loading if no session ID (dashboard mode)
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
+
     async function loadSession() {
       try {
         setLoading(true);
 
-        // If session ID provided, load that session
-        // Otherwise, load the most recent session
-        const url = sessionId
-          ? `/api/sessions/${sessionId}`
-          : '/api/sessions/latest';
-
-        const response = await fetch(url);
+        // Load the specified session
+        const response = await fetch(`/api/sessions/${sessionId}`);
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -74,7 +78,7 @@ export function HomeContent() {
     };
   }, [session?.id]);
 
-  const handleTestUpdate = async (testId: string, updates: { userResult?: TestStatus; userRemarks?: string; userSteps?: UserStep[] }) => {
+  const handleTestUpdate = useCallback(async (testId: string, updates: { userResult?: TestStatus; userRemarks?: string; userSteps?: UserStep[] }) => {
     if (!session) return;
 
     try {
@@ -100,9 +104,9 @@ export function HomeContent() {
     } catch (err) {
       console.error('Failed to update test:', err);
     }
-  };
+  }, [session]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!session) return;
 
     try {
@@ -119,7 +123,12 @@ export function HomeContent() {
     } catch (err) {
       console.error('Failed to submit session:', err);
     }
-  };
+  }, [session]);
+
+  // If no session ID, show the dashboard
+  if (!sessionId) {
+    return <Dashboard />;
+  }
 
   if (loading) {
     return (
@@ -142,6 +151,13 @@ export function HomeContent() {
           <p className="text-sm text-muted-foreground">
             Run <code className="bg-muted px-2 py-1 rounded">node cli.js generate-tests</code> to create tests.
           </p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 mt-4 text-primary hover:underline"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
         </div>
       </div>
     );
@@ -161,8 +177,15 @@ export function HomeContent() {
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-5xl">
-      {/* Header */}
+      {/* Header with back link */}
       <div className="mb-8">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </Link>
         <h1 className="text-3xl font-bold mb-2">E2E Testing</h1>
         <p className="text-muted-foreground">{session.feature}</p>
         <p className="text-sm text-muted-foreground mt-1">

@@ -86,6 +86,9 @@ export function NotesPanel({ notes, sessionId, testId, onNoteAdded }: NotesPanel
       if (response.ok) {
         const newNote = await response.json();
         onNoteAdded(newNote);
+        // Close the text input if open (user just wanted to paste image)
+        setIsAdding(false);
+        setNoteText('');
       }
     } catch (err) {
       console.error('Failed to upload image:', err);

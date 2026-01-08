@@ -53,6 +53,7 @@ export interface Test {
   id: string;
   title: string;
   description: string;
+  targetUrl?: string;           // URL where this test should be executed
   category: TestCategory;
   priority: TestPriority;
 

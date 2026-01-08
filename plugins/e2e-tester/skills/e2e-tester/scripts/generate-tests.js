@@ -52,6 +52,7 @@ Test Case Format (NEW - User/Claude separation):
 {
   "title": "Test title",
   "description": "What this test verifies",
+  "targetUrl": "http://localhost:3000/page-to-test",  // Optional: URL where test should run
   "category": "ui|api|integration|edge-case|data-verification",
   "priority": "critical|high|medium|low",
   "userSteps": [
@@ -145,6 +146,7 @@ Example:
       id: `t_${String(index + 1).padStart(3, '0')}`,
       title: test.title,
       description: test.description || '',
+      targetUrl: test.targetUrl || null,
       category: test.category || 'ui',
       priority: test.priority || 'medium',
 
@@ -197,6 +199,7 @@ Example:
         userStepsCount: totalUserSteps,
         autoVerificationsCount: totalAutoVerifications,
         url: `http://localhost:${status.port}?session=${session.id}`,
+        dashboardUrl: `http://localhost:${status.port}`,
         message: `Created ${formattedTests.length} tests with ${totalUserSteps} manual steps and ${totalAutoVerifications} auto verifications for "${feature}"`,
       })
     );

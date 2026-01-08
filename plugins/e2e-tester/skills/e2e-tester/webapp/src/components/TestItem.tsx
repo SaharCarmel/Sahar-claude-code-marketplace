@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Check, X, SkipForward } from 'lucide-react';
+import { ChevronDown, ChevronRight, Check, X, SkipForward, ExternalLink } from 'lucide-react';
 import { TestStep } from './TestStep';
 import { NotesPanel } from './NotesPanel';
 import { cn, getPriorityColor, getStatusColor, getCategoryLabel } from '@/lib/utils';
@@ -149,6 +149,22 @@ export function TestItem({
             <p className="text-sm text-muted-foreground mt-4">
               {test.description}
             </p>
+          )}
+
+          {/* Target URL */}
+          {test.targetUrl && (
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Test URL:</span>
+              <a
+                href={test.targetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 break-all"
+              >
+                {test.targetUrl}
+                <ExternalLink className="w-3 h-3 flex-shrink-0" />
+              </a>
+            </div>
           )}
 
           {/* User Steps */}
