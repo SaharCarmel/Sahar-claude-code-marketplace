@@ -1,0 +1,40 @@
+services:
+  e2e-tester:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: e2e-tester
+    ports:
+      - "3458:3458"
+    volumes:
+      - ~/.e2e-tester:/data
+    environment:
+      - NODE_ENV=production
+      - DATA_DIR=/data
+      - PORT=3458
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3458/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Development mode with hot reload
+  e2e-tester-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: e2e-tester-dev
+    ports:
+      - "3458:3458"
+    volumes:
+      - ~/.e2e-tester:/data
+      - ./src:/app/src:ro
+      - ./public:/app/public:ro
+    environment:
+      - NODE_ENV=development
+      - DATA_DIR=/data
+      - PORT=3458
+    profiles:
+      - dev

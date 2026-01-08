@@ -1,0 +1,22 @@
+{
+  "name": "e2e-tester",
+  "version": "1.0.0",
+  "description": "E2E testing workflow with Docker-based webapp for manual test verification. Generates contextual test checklists, tracks user testing progress, and enters plan mode to fix failures.",
+  "author": {
+    "name": "Sahar Carmel",
+    "email": "sahar@example.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "e2e",
+    "testing",
+    "manual-testing",
+    "qa",
+    "verification",
+    "docker",
+    "webapp"
+  ],
+  "homepage": "https://github.com/saharcarmel/e2e-tester",
+  "repository": "https://github.com/saharcarmel/e2e-tester",
+  "hooks": "./hooks/hooks.json"
+}

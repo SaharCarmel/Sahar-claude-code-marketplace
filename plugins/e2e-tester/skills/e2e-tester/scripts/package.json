@@ -1,0 +1,11 @@
+{
+  "name": "e2e-tester-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "CLI tools for E2E Tester plugin",
+  "main": "cli.js",
+  "scripts": {
+    "start": "node cli.js"
+  },
+  "dependencies": {}
+}

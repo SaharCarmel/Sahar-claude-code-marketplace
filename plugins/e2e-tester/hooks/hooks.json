@@ -1,0 +1,17 @@
+{
+  "description": "E2E Tester hooks for generating and tracking manual E2E tests after task completion",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/on-task-complete.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
