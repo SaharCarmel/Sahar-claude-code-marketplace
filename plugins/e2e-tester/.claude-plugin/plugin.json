@@ -17,6 +17,5 @@
     "webapp"
   ],
   "homepage": "https://github.com/saharcarmel/e2e-tester",
-  "repository": "https://github.com/saharcarmel/e2e-tester",
-  "hooks": "./hooks/hooks.json"
+  "repository": "https://github.com/saharcarmel/e2e-tester"
 }
