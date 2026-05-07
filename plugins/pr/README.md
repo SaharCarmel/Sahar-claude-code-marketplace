@@ -63,17 +63,25 @@ This skill is opinionated and assumes a specific stack. Some steps degrade grace
 | `cargo` | 4 (only if `apps/cli/` exists) | Skipped otherwise |
 | `code-simplifier` agent | 8 | Skipped if not installed |
 | **CandleKeep** (`ck` CLI + library books) | 9 | **Skipped with notice if not installed** |
-| `code-reviewer` / `security-reviewer` / `uiux-reviewer` agents | 9 | Required for Step 9 |
+| `code-reviewer` / `security-reviewer` / `uiux-reviewer` agents | 9 | **Bundled with this plugin** |
 
 ### About Step 9 (CandleKeep code review)
 
 Step 9 reads books from your [CandleKeep](https://getcandlekeep.com) library — specifically books on code review, security, and UI/UX design — and uses them as the source of truth for the review. If you don't have CandleKeep installed or don't have any review-related books in your library, the skill detects this and skips the step with a message telling you what to add.
 
+This plugin **bundles three specialized reviewer agents** that the skill orchestrates in parallel:
+
+| Agent | Source book | Coverage |
+|-------|-------------|----------|
+| `code-reviewer` | Code Review for AI Agents (546 pages, 186 rules) | Naming, complexity, error handling, testing |
+| `security-reviewer` | Web Application Security for AI Agents (39 pages) | Auth, injection, BOLA, CSRF, headers, file uploads |
+| `uiux-reviewer` | UI/UX Design Principles for AI Agents (15 pages) | Accessibility, responsive design, component states |
+
 To enable Step 9:
 
 1. Install the CandleKeep CLI: see [getcandlekeep.com](https://getcandlekeep.com)
-2. Add at least one book matching keywords: *"code review", "clean code", "security", "design principles", "accessibility"*
-3. Make sure the `code-reviewer`, `security-reviewer`, and `uiux-reviewer` agents are available
+2. Add the three books referenced above to your library (or any books matching keywords: *"code review", "clean code", "security", "design principles", "accessibility"*)
+3. The agents themselves come bundled with this plugin — no separate install needed
 
 Without CandleKeep, you still get Steps 1–8 and 10 — a fully automated "commit → quality gates → PR → simplify" pipeline.
 
