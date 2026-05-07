@@ -166,30 +166,54 @@ After the code-simplifier is launched, run a structured code review using Candle
    > "No code review books found in your CandleKeep library. To enable this step, add books on code review, clean code, security, or design principles to your library."
 4. If relevant books are found → proceed to Phase 2.
 
-#### Phase 2: Prepare Diff & Select Agents
+#### Phase 2: Prepare Diff & Select Adjunct Agents
 
 1. Run `git diff <base-branch>...HEAD > /tmp/pr-review-diff.txt` and `git diff <base-branch>...HEAD --name-only > /tmp/pr-review-files.txt`.
-2. Read `/tmp/pr-review-files.txt` and select which agents to launch:
-   - **Always**: `code-reviewer` — covers 186 rules across 16 chapters
-   - **If** files match `api/*, route.*, middleware/*, auth/*, webhook*, *.env*` → also launch `security-reviewer`
-   - **If** files match `*.tsx, *.jsx, *.css, *.html, components/*, pages/*, app/*` → also launch `uiux-reviewer`
-   - **If only** `*.md, docs/*, *.yml` → skip agents, do a quick manual review and proceed
+2. Read `/tmp/pr-review-files.txt` and decide which adjunct (non-code-quality) agents to launch:
+   - **If** files match `api/*, route.*, middleware/*, auth/*, webhook*, *.env*` → launch `security-reviewer` in Phase 3
+   - **If** files match `*.tsx, *.jsx, *.css, *.html, components/*, pages/*, app/*` → launch `uiux-reviewer` in Phase 3
+   - **If only** `*.md, docs/*, *.yml` → skip ALL review agents (including code-review fan-out) and proceed to Step 10
+
+The code-review fan-out itself is decided dynamically in Phase 2.5, not here.
+
+#### Phase 2.5: Plan Code Review Fan-Out (dispatcher)
+
+Launch the dispatcher to decide how many parallel `code-reviewer` agents to spawn and which chapters of the Code Review book each owns. **Foreground, single agent.**
+
+```
+Agent tool call:
+  subagent_type: "code-review-dispatcher"
+  prompt: |
+    Plan the code review fan-out for this PR.
+    diff_path:   /tmp/pr-review-diff.txt
+    files_path:  /tmp/pr-review-files.txt
+    book_id:     cmmwi3mo700vlta0zlbfqjtcb
+    output_path: /tmp/pr-review-plan.json
+    PR context:  [branch name, PR title/description from Step 5]
+    Decide how many code-reviewer agents to spawn (1-6) and which chapters
+    each owns so the whole Code Review book is covered exhaustively.
+```
+
+After the dispatcher completes, read `/tmp/pr-review-plan.json`. The `reviewers` array tells you exactly how many `code-reviewer` agents to launch in Phase 3 and what to put in each prompt.
 
 #### Phase 3: Launch Review Agents (foreground, parallel)
 
-Launch all selected agents in a **single message** (foreground — do NOT use `run_in_background`). Each agent writes structured findings to its own output file.
+Launch all agents in a **single message** (foreground — do NOT use `run_in_background`). Each writes structured findings to its own output file.
+
+For each entry in the dispatcher plan's `reviewers` array, spawn one `code-reviewer` agent. Plus the security/uiux reviewers selected in Phase 2.
 
 ```
-Agent tool call 1 (always):
+For each reviewer in plan.reviewers — Agent tool call:
   subagent_type: "code-reviewer"
   prompt: |
-    Review the code diff at /tmp/pr-review-diff.txt using the Code Review
-    for AI Agents book (cmmwi3mo700vlta0zlbfqjtcb).
-    PR context: [branch name, PR title/description from Step 5]
-    File list: [contents of /tmp/pr-review-files.txt]
-    Write your complete review to /tmp/pr-review-quality.md
+    reviewer_id:  {reviewer.id}
+    focus:        {reviewer.focus}
+    chapters:     {reviewer.chapters}
+    diff_path:    /tmp/pr-review-diff.txt
+    output_path:  {reviewer.output_path}
+    PR context:   [branch name, PR title/description from Step 5]
 
-Agent tool call 2 (if security-relevant files detected):
+Agent tool call (if security-relevant files detected in Phase 2):
   subagent_type: "security-reviewer"
   prompt: |
     Review the code diff at /tmp/pr-review-diff.txt for security issues
@@ -197,7 +221,7 @@ Agent tool call 2 (if security-relevant files detected):
     PR context: [branch name, PR title/description]
     Write your complete review to /tmp/pr-review-security.md
 
-Agent tool call 3 (if UI-relevant files detected):
+Agent tool call (if UI-relevant files detected in Phase 2):
   subagent_type: "uiux-reviewer"
   prompt: |
     Review the code diff at /tmp/pr-review-diff.txt for UI/UX issues
@@ -210,7 +234,7 @@ Wait for all agents to complete. Read all output files.
 
 #### Phase 4: Consolidate Findings
 
-1. Read `/tmp/pr-review-quality.md`, `/tmp/pr-review-security.md` (if exists), and `/tmp/pr-review-uiux.md` (if exists).
+1. Read every `/tmp/pr-review-quality-*.md` file (one per code-reviewer in the dispatcher plan), plus `/tmp/pr-review-security.md` (if exists) and `/tmp/pr-review-uiux.md` (if exists).
 2. Build a **master findings list** ordered by severity (CRITICAL → HIGH → MEDIUM → LOW).
 3. Deduplicate: if the same file:line appears in multiple reviews, merge into one finding with the higher severity.
 4. Display the consolidated review to the user:

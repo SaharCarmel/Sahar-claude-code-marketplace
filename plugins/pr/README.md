@@ -71,11 +71,14 @@ Step 9 reads books from your [CandleKeep](https://getcandlekeep.com) library —
 
 This plugin **bundles three specialized reviewer agents** that the skill orchestrates in parallel:
 
-| Agent | Source book | Coverage |
-|-------|-------------|----------|
-| `code-reviewer` | Code Review for AI Agents (546 pages, 186 rules) | Naming, complexity, error handling, testing |
-| `security-reviewer` | Web Application Security for AI Agents (39 pages) | Auth, injection, BOLA, CSRF, headers, file uploads |
-| `uiux-reviewer` | UI/UX Design Principles for AI Agents (15 pages) | Accessibility, responsive design, component states |
+| Agent | Model | Source book | Coverage |
+|-------|-------|-------------|----------|
+| `code-review-dispatcher` | Haiku | Code Review for AI Agents (TOC only) | Reads the book TOC + diff, decides how many code-reviewer agents to fan out and which chapters each owns |
+| `code-reviewer` (xN, parallel) | Haiku | Code Review for AI Agents (679 pages, 186+ rules) | Each instance owns a chapter bucket; together they cover the whole book |
+| `security-reviewer` | Opus | Web Application Security for AI Agents (39 pages) | Auth, injection, BOLA, CSRF, headers, file uploads |
+| `uiux-reviewer` | Sonnet | UI/UX Design Principles for AI Agents (15 pages) | Accessibility, responsive design, component states |
+
+**Why fan out the code reviewer?** The Code Review book has 19+ chapters and is too big for one reviewer to cover well within a context window. Instead of letting one Opus agent classify the PR and read 3–5 chapters, we run a Haiku dispatcher that partitions the chapters across multiple Haiku reviewers. Result: exhaustive coverage of the book, faster, and cheaper.
 
 To enable Step 9:
 
