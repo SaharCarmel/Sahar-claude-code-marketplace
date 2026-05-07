@@ -64,6 +64,20 @@
       "skills": [
         "./skills/e2e-tester"
       ]
+    },
+    {
+      "name": "pr",
+      "description": "Full PR workflow: commit, run quality gates, push, create GitHub PR with curated QA checklist, then run a CandleKeep-backed code review and auto-fix all findings",
+      "version": "1.0.0",
+      "author": {
+        "name": "Sahar Carmel",
+        "email": "sahar@example.com"
+      },
+      "source": "./plugins/pr",
+      "category": "productivity",
+      "skills": [
+        "./skills/pr"
+      ]
     }
   ]
 }
