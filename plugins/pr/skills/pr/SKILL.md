@@ -12,6 +12,18 @@ description: >-
   Works from both main repo and worktrees.
 ---
 
+## Agent & Tool Reference
+
+| Agent | Subagent Type | When Used |
+|-------|--------------|-----------|
+| Code Review Dispatcher | `pr:code-review-dispatcher` | Phase 2.5 — plans fan-out |
+| Code Reviewer | `pr:code-reviewer` | Phase 3 — parallel quality review |
+| Security Reviewer | `pr:security-reviewer` | Phase 3 — if security-relevant files |
+| UI/UX Reviewer | `pr:uiux-reviewer` | Phase 3 — if frontend files |
+| Code Simplifier | `code-simplifier:code-simplifier` | Step 8 — simplification pass |
+
+**Important:** Always use the exact `subagent_type` values from this table. If an agent type is unavailable at runtime, report the error to the user — do not substitute alternative names or skills.
+
 ## Full PR Workflow
 
 Execute all steps sequentially. Stop and report on failure unless noted otherwise.
@@ -158,13 +170,15 @@ Inform user: "Code-simplifier is running in background — any improvements will
 
 After the code-simplifier is launched, run a structured code review using CandleKeep's specialized review agents, then **fix ALL findings**.
 
-#### Phase 1: Scan Library (synchronous)
+#### Phase 1: Verify CandleKeep Availability (synchronous)
 
-1. Run `ck items list --json` to list all books in the CandleKeep library.
-2. Filter results for books whose title or subject matches any of these keywords (case-insensitive): "code review", "coding standards", "best practices", "clean code", "style guide", "refactoring", "security", "web application security", "UI", "UX", "design principles", "accessibility".
-3. If **zero** relevant books are found → skip this step and inform the user:
-   > "No code review books found in your CandleKeep library. To enable this step, add books on code review, clean code, security, or design principles to your library."
-4. If relevant books are found → proceed to Phase 2.
+1. Check that CandleKeep CLI is installed and authenticated:
+   ```bash
+   ck auth whoami
+   ```
+2. If the command fails (not found, not authenticated, or errors) → skip the code review (Phases 2–6) and inform the user:
+   > "CandleKeep CLI is not available or not authenticated. Skipping book-guided code review. Run `ck auth login` to enable it."
+3. If successful → proceed to Phase 2. The review agents reference specific book IDs and will access them directly.
 
 #### Phase 2: Prepare Diff & Select Adjunct Agents
 
@@ -182,7 +196,7 @@ Launch the dispatcher to decide how many parallel `code-reviewer` agents to spaw
 
 ```
 Agent tool call:
-  subagent_type: "code-review-dispatcher"
+  subagent_type: "pr:code-review-dispatcher"
   prompt: |
     Plan the code review fan-out for this PR.
     diff_path:   /tmp/pr-review-diff.txt
@@ -204,7 +218,7 @@ For each entry in the dispatcher plan's `reviewers` array, spawn one `code-revie
 
 ```
 For each reviewer in plan.reviewers — Agent tool call:
-  subagent_type: "code-reviewer"
+  subagent_type: "pr:code-reviewer"
   prompt: |
     reviewer_id:  {reviewer.id}
     focus:        {reviewer.focus}
@@ -214,7 +228,7 @@ For each reviewer in plan.reviewers — Agent tool call:
     PR context:   [branch name, PR title/description from Step 5]
 
 Agent tool call (if security-relevant files detected in Phase 2):
-  subagent_type: "security-reviewer"
+  subagent_type: "pr:security-reviewer"
   prompt: |
     Review the code diff at /tmp/pr-review-diff.txt for security issues
     using the Web Application Security book (cmmj33tuj00pumw01eqmthzdh).
@@ -222,7 +236,7 @@ Agent tool call (if security-relevant files detected in Phase 2):
     Write your complete review to /tmp/pr-review-security.md
 
 Agent tool call (if UI-relevant files detected in Phase 2):
-  subagent_type: "uiux-reviewer"
+  subagent_type: "pr:uiux-reviewer"
   prompt: |
     Review the code diff at /tmp/pr-review-diff.txt for UI/UX issues
     using the UI/UX Design Principles book (cmmfdl2z503qep10zhi9dp1m4).
